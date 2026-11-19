@@ -1,0 +1,5 @@
+[project]
+name = "speakeasy"
+version = "2.0.0"
+description = "Python-first speaking practice app with Firebase AI Logic hybrid inference"
+requires-python = ">=3.12,<3.14"
