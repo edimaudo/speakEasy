@@ -1,5 +1,5 @@
-from pathlib import Path
 from html.parser import HTMLParser
+from pathlib import Path
 import re
 
 ROOT = Path(__file__).resolve().parents[1]
@@ -15,6 +15,31 @@ def test_python_first_structure_has_no_js_build_stack():
     assert (ROOT / "templates" / "index.html").exists()
 
 
+def test_no_server_database_or_persistent_storage_dependency_exists():
+    requirements = (ROOT / "requirements.txt").read_text().lower()
+    forbidden_dependencies = ("sqlalchemy", "psycopg", "asyncpg", "databases", "firebase-admin")
+    assert not any(name in requirements for name in forbidden_dependencies)
+    for relative_path in ("app/database.py", "app/models.py", "app/security.py", "data"):
+        assert not (ROOT / relative_path).exists(), relative_path
+    source = (ROOT / "main.py").read_text().lower()
+    assert "sqlalchemy" not in source
+    assert "database_url" not in source
+    assert "create_database" not in source
+    assert not list(ROOT.rglob("*.sqlite"))
+    assert not list(ROOT.rglob("*.sqlite3"))
+    assert not list(ROOT.rglob("*.db"))
+
+
+def test_browser_local_store_owns_history_and_usage_not_vercel():
+    store = (ROOT / "public" / "static" / "js" / "local-store.js").read_text()
+    app_js = (ROOT / "public" / "static" / "js" / "app.js").read_text()
+    assert "indexedDB.open" in store
+    assert "expiresAt" in store
+    assert "listSessions" in app_js
+    assert '"/api/sessions' not in app_js
+    assert '"/api/usage' not in app_js
+
+
 def test_no_other_firebase_products_or_admin_sdks_are_installed():
     requirements = (ROOT / "requirements.txt").read_text().lower()
     assert "firebase-admin" not in requirements
@@ -28,8 +53,8 @@ def test_no_other_firebase_products_or_admin_sdks_are_installed():
 
 def test_templates_and_static_assets_exist():
     assert (ROOT / "public" / "static" / "css" / "styles.css").exists()
-    assert (ROOT / "public" / "static" / "js" / "firebase-ai.js").exists()
-    assert (ROOT / "public" / "static" / "js" / "app.js").exists()
+    for filename in ("firebase-ai.js", "app.js", "local-store.js"):
+        assert (ROOT / "public" / "static" / "js" / filename).exists()
 
 
 class _IdParser(HTMLParser):
@@ -53,17 +78,6 @@ def test_all_literal_javascript_id_selectors_exist_in_template():
     assert selectors <= parser.ids, f"Selectors missing from HTML: {sorted(selectors - parser.ids)}"
 
 
-def test_browser_firebase_imports_are_limited_to_ai_logic_and_required_bootstrap():
-    js = (ROOT / "public" / "static" / "js" / "firebase-ai.js").read_text()
-    assert "firebase-app.js" in js
-    assert "firebase-ai.js" in js
-    assert "firebase-app-check.js" in js
-    assert "firebase-auth.js" not in js
-    assert "firebase-firestore.js" not in js
-    assert "firebase-storage.js" not in js
-    assert "firebase-admin" not in js.lower()
-
-
 def test_html_static_asset_paths_map_to_public_directory(client):
     home = client.get("/")
     assert home.status_code == 200
@@ -73,9 +87,11 @@ def test_html_static_asset_paths_map_to_public_directory(client):
     css = client.get("/static/css/styles.css")
     app_js = client.get("/static/js/app.js")
     ai_js = client.get("/static/js/firebase-ai.js")
+    store_js = client.get("/static/js/local-store.js")
     assert css.status_code == 200 and "text/css" in css.headers["content-type"]
     assert app_js.status_code == 200 and "javascript" in app_js.headers["content-type"]
     assert ai_js.status_code == 200 and "firebase-ai.js" in ai_js.text
+    assert store_js.status_code == 200 and "indexedDB.open" in store_js.text
 
 
 def test_no_typescript_or_node_frontend_build_files_exist():
@@ -112,3 +128,24 @@ def test_custom_error_templates_and_shared_error_styles_exist():
     css = (ROOT / "public" / "static" / "css" / "styles.css").read_text()
     for selector in (".error-page-shell", ".error-page-main", ".error-code", ".error-home-button"):
         assert selector in css
+
+
+def test_python_dotenv_is_local_optional_dependency():
+    root_source = (ROOT / "main.py").read_text()
+    requirements = (ROOT / "requirements.txt").read_text().lower()
+    assert "python-dotenv" in requirements
+    assert "except ModuleNotFoundError" in root_source
+    assert "load_dotenv is not None" in root_source
+
+
+def test_no_duplicate_dependency_manifest():
+    assert (ROOT / "requirements.txt").exists()
+    assert not (ROOT / "pyproject.toml").exists()
+
+
+def test_vercel_has_no_cron_or_database_configuration():
+    vercel = (ROOT / "vercel.json").read_text().lower()
+    assert "cron" not in vercel
+    env_example = (ROOT / ".env.example").read_text().lower()
+    assert "database_url" not in env_example
+    assert "postgres" not in env_example

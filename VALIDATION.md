@@ -1,35 +1,40 @@
-# SpeakEasy build validation
+# SpeakEasy validation report — stateless Vercel build
 
-## Implemented architecture
+## Architecture corrections
 
-- Python 3.12+ and FastAPI are the application and backend.
-- Jinja2 serves the HTML interface, including branded 404 and 500 error pages.
-- Vanilla CSS styles the application and error pages.
-- Two plain JavaScript modules handle browser-only functions and the Firebase AI Logic web SDK.
-- Firebase integration is limited to Firebase AI Logic and App Check protection required for it.
-- There is no React, TypeScript, Tailwind, Vite, Node runtime, npm build, Firebase Authentication, Firestore, Cloud Storage, Firebase Admin SDK, or separate Gemini SDK.
-- Application records are held in SQLite locally or PostgreSQL when deployed to Vercel.
+- Removed server-side SQLAlchemy persistence.
+- Removed the SQLite/PostgreSQL database connection module and ORM model module.
+- Removed database drivers and `DATABASE_URL` configuration.
+- Removed the signed guest cookie and all server-side visitor/session state.
+- Removed server-side usage reservation, session history, retry persistence, and cleanup endpoints.
+- Removed the Vercel scheduled database-cleanup cron.
+- Replaced server-side history and usage tracking with browser IndexedDB in `public/static/js/local-store.js`.
+- Kept Python FastAPI for HTML rendering, security headers, scorecard validation, and exact composite-score calculation.
+- Kept Firebase AI Logic as the only Firebase integration; App Check is used only to protect AI Logic requests.
 
-## Checks run in this environment
+## Persistence behavior
 
-- `python -m pytest -q`: **29 tests passed**.
+Vercel functions do not retain application filesystem writes between invocations. This build does not attempt to write a database or user session files to the Vercel filesystem.
+
+Completed sessions, transcripts, scorecards, retry status, and the daily convenience allowance are stored in the user's browser IndexedDB. Records are removed after 30 days when the local store is accessed, including during application startup. Browser data is not synchronized between devices. Clearing browser site data removes history and resets the local allowance. The daily allowance is therefore a client-side convenience cap, not tamper-proof enforcement.
+
+## Automated checks
+
+- `python -m pytest -q`: **29 passed**.
 - `python -m compileall -q main.py app tests`: passed.
-- Plain JavaScript module syntax checks using Node: passed. Node is used only as an optional development syntax checker, not as an application dependency or runtime.
-- CSS parsed with `tinycss2`: no syntax errors.
-- HTML templates parsed; template IDs and browser selectors checked for consistency.
-- FastAPI route smoke tests: passed.
-- Locally served CSS and JavaScript asset requests: passed.
-- Unknown browser routes return branded HTML with HTTP 404.
-- Unhandled browser errors return branded HTML with HTTP 500 and do not expose exception details.
-- Unknown API routes continue to return JSON with HTTP 404.
+- Node syntax check for `app.js`, `firebase-ai.js`, and `local-store.js`: passed.
+- `vercel.json` JSON parse: passed.
+- FastAPI route smoke tests: `/`, `/health`, CSS and JavaScript static assets returned HTTP 200.
+- Removed `/api/sessions` and `/api/usage` endpoints return HTTP 404.
+- Structure tests confirm there are no database modules, database drivers, database environment variables, or database files in the project.
+- Scorecard validation still enforces exact transcript quotations and recomputes the primary four-metric average in Python.
+- Branded 404 and 500 pages remain in place.
 
-## Not verified here
+## Not verified in this environment
 
-- Live Firebase AI Logic requests: require the customer's Firebase project values and an enabled AI Logic provider.
-- App Check / reCAPTCHA verification against the customer's project: requires the registered production site key and debug-token setup.
-- Live Gemini Nano inference: requires a supported Chrome desktop installation, a downloaded model, and a real browser.
-- Browser microphone / speech recognition and visual accessibility: no Chromium browser executable was available in this environment.
-- Vercel deployment and PostgreSQL connectivity: require the customer's Vercel project and managed PostgreSQL connection string.
-- Loading the Firebase SDK from Google's CDN could not be tested live because outbound DNS/network access was unavailable.
+- Live Firebase AI Logic requests and Gemini Nano inference on a configured Chrome device.
+- Real microphone and speech recognition end-to-end behavior in a physical browser.
+- Full keyboard/screen-reader accessibility audit.
+- A live Vercel deployment.
 
-The checks above verify source structure and local Python routes, not production deployment or live AI behavior.
+The automated checks do not replace those external acceptance tests.

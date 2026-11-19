@@ -1,104 +1,93 @@
-# SpeakEasy
+# SpeakEasy + Hot Takes
 
-SpeakEasy is a 
+SpeakEasy is a Python-first speaking practice application. FastAPI serves the application and owns its server-side validation. The browser uses a small amount of plain JavaScript for microphone access, local speech recognition, timers, IndexedDB history, and the Firebase AI Logic web SDK.
 
 ## Architecture
 
-```text
-speakeasy/
-├── main.py                    # FastAPI entry point and HTTP routes
-├── requirements.txt           # Python dependencies only
-├── vercel.json                # Vercel deployment and daily cleanup schedule
-├── .env.example
-├── app/
-│   ├── config.py              # Environment configuration
-│   ├── database.py            # SQLite locally / PostgreSQL on Vercel
-│   ├── models.py              # SQLAlchemy persistence models
-│   ├── schemas.py             # API request validation
-│   ├── scoring.py             # Filler counts and score validation
-│   └── security.py            # Signed anonymous browser identity
-├── templates/
-│   ├── index.html             # Server-rendered user interface
-│   ├── 404.html               # Branded not-found page
-│   └── 500.html               # Branded server-error page
-├── public/
-│   └── static/                # Static files served by Vercel CDN
-│       ├── css/styles.css     # Vanilla CSS
-│       └── js/
-│           ├── app.js         # Browser interactions and local speech capture
-│           └── firebase-ai.js # Firebase AI Logic browser integration
-└── tests/                     # Python API, scoring and architecture tests
-```
+- **Python / FastAPI:** page rendering, API routing, scorecard validation, score calculation, security headers, and error handling.
+- **HTML / Jinja2:** server-rendered application pages.
+- **Vanilla CSS:** all application styling.
+- **Plain JavaScript:** browser-only interactions, microphone and speech recognition, and Firebase AI Logic calls.
+- **Firebase AI Logic:** the only Firebase integration. It provides Gemini Nano on-device inference and cloud Gemini through the managed AI Logic proxy. App Check protects AI Logic requests.
+- **Browser IndexedDB:** completed session history, retry state, and the local daily allowance. Records expire after 30 days.
+- **Vercel:** serves the Python application and static assets. The server is stateless and writes no files.
 
+There is deliberately **no server-side database**. The project has no SQLite, PostgreSQL, SQLAlchemy, database connection layer, `DATABASE_URL`, Firebase Firestore, Firebase Authentication, Firebase Storage, Firebase Admin SDK, or server-side session persistence. Do not add a database to Vercel for this version.
 
-### Structured Practice
+### Important persistence limitation
 
-- Interview, Presentation and Everyday Speaking goals.
-- Optional job-description context for interview question generation.
-- Fourteen generated questions; the first three unlock immediately.
-- Sixty-second speaking sessions.
-- One free retry per drill.
+History and the daily practice allowance belong to the user's current browser profile on the current device. They are not synchronized to other devices, and clearing browser site data removes them. Because there is no persistent server-side store or account system, the daily allowance is a convenience limit, not tamper-proof enforcement: a user can reset it by clearing local site data or using another browser/device.
+
+## Features
+
+### Structured practice
+
+- Interview, Presentation, and Everyday Speaking goals.
+- Optional job description context for interview question generation.
+- Fourteen generated questions, with the first three unlocked immediately.
+- Sixty-second speaking drills.
 
 ### Hot Take Arena
 
-- UX & Product Design, Tech & AI, Workplace Culture and Custom Topic.
-- Mild, Spicy and Extra Hot difficulty.
-- Extra Hot prompts include a mandatory forbidden word or phrase.
-- Five-second preparation countdown and ninety-second response.
-- Stance clarity and punchier hook coaching.
+- UX & Product Design, Tech & AI, Workplace Culture, and Custom Topic categories.
+- Mild, Spicy, and Extra Hot levels.
+- Extra Hot includes a forbidden word or phrase.
+- Five-second preparation and ninety-second response.
+- Stance clarity and punchier-hook coaching.
 
 ### Speech and privacy
 
 - The browser requests on-device speech recognition using `processLocally = true`.
-- If on-device speech recognition is unsupported or its language pack is unavailable, the user can type the transcript. The app does not switch to a remote speech-recognition service.
-- A Web Audio analyser produces a live waveform. The app does not create an audio Blob or send microphone audio to the server.
-- The transcript is sent to Firebase AI Logic for coaching and to the Python API for history. Raw audio is never uploaded or persisted.
-- History is stored for 30 days.
+- If local recognition is unavailable, the user can type the transcript. The app does not switch to a remote speech recognition service.
+- A Web Audio analyser renders a live waveform. The app does not create audio blobs or send microphone audio to the server.
+- Transcripts are sent to Firebase AI Logic for coaching. Completed transcripts and scorecards remain in the browser's IndexedDB history for up to 30 days.
+- No server-side session or transcript persistence exists.
 
 ### Coaching and scoring
 
-- Six metrics: Content, Structure, Delivery & Pacing, Confidence, Hook and Filler Control.
-- Overall score is recalculated by Python as the exact arithmetic mean of Content, Structure, Delivery & Pacing and Confidence.
-- Line to Fix must be an exact transcript quote; non-matching model annotations are rejected or ignored.
-- Hot Take results include Stance Clarity, a stance verdict and a punchier hook.
+- Content, Structure, Delivery & Pacing, Confidence, Hook, and Filler Control metrics.
+- Overall score is recalculated by Python as the exact arithmetic mean of Content, Structure, Delivery & Pacing, and Confidence.
+- The Line to Fix must be an exact transcript quote.
+- Hot Take results include Stance Clarity, a stance verdict, and a punchier hook.
+- Delivery & Pacing is estimated from transcript length and elapsed time. It does not measure vocal tone, volume, pauses, pitch, or prosody because audio is not uploaded.
 
-**Scoring limitation:** the app does not upload audio for voice analysis. Delivery & Pacing is therefore an estimate based on transcript length and elapsed time. It does not measure actual pitch, volume, pauses, vocal tone or prosody.
+## Requirements
 
-**Speech fallback:** if the browser cannot provide local speech recognition, the user types or pastes a transcript. No audio-buffer upload is used, preserving the no-audio-upload privacy requirement.
+- Python 3.12 or newer.
+- A modern browser. Chrome Desktop 139+ is required for the documented Gemini Nano and local speech recognition path.
+- A Firebase project with Firebase AI Logic enabled.
+- A reCAPTCHA Enterprise site key registered with Firebase App Check for AI Logic.
+- A Vercel account for deployment.
 
-##  Local setup
+No Node.js, npm, TypeScript, frontend bundler, database, or external storage service is required.
 
-From the project directory:
+## Local setup
+
+Create and activate a virtual environment:
 
 ```bash
 python -m venv .venv
-```
 
-Activate the environment:
-
-```bash
 # macOS / Linux
 source .venv/bin/activate
 
 # Windows PowerShell
-.venv\Scripts\Activate.ps1
+.venv\\Scripts\\Activate.ps1
 ```
 
-Install Python requirements:
+Install Python dependencies:
 
 ```bash
 pip install -r requirements.txt
 ```
 
-Create the environment file:
+Create your local environment file:
 
 ```bash
 cp .env.example .env
 ```
 
-Fill in the Firebase values described below. For local development, leave `DATABASE_URL` empty; the application creates `data/speakeasy.sqlite3` automatically.
-
-Start the application:
+Fill in the Firebase AI Logic values described below, then start FastAPI:
 
 ```bash
 uvicorn main:app --reload
@@ -108,97 +97,61 @@ Open `http://127.0.0.1:8000`.
 
 ## Firebase AI Logic setup
 
-### Create and enable the project
-
-1. Open the [Firebase Console](https://console.firebase.google.com/).
-2. Create a Firebase project (Google Analytics is not required for this app).
-3. Open **AI Services → AI Logic**.
-4. Select **Get started**.
-5. Select the **Agent Platform Gemini API** provider. The code uses `AgentPlatformBackend` and the `global` location.
-6. Complete the guided setup and enable the required APIs.
-
-The browser code currently uses `gemini-3.5-flash-lite`. The model can be changed with `FIREBASE_AI_MODEL` without changing Python code.
-
-### Register the web app
-
-1. In Firebase Project Overview, add a Web app.
-2. Copy the web configuration values.
-3. Set these values in `.env`:
+1. Open the [Firebase Console](https://console.firebase.google.com/) and create or select the client's project.
+2. Open **AI Services → AI Logic → Get started**.
+3. Select the **Agent Platform Gemini API** provider. The browser integration uses `AgentPlatformBackend` with the `global` location.
+4. Complete Firebase's guided setup and enable the APIs it requests.
+5. Register a Web app in Firebase Project Overview and copy its public web configuration values.
+6. In Google Cloud Console, create a reCAPTCHA Enterprise website score-based key for the deployed domain.
+7. In Firebase Console, open **Security → App Check**, register the web app with reCAPTCHA Enterprise, and enforce App Check for Firebase AI Logic.
+8. Add the values to `.env`:
 
 ```dotenv
 FIREBASE_API_KEY=your-web-api-key
 FIREBASE_PROJECT_ID=your-project-id
 FIREBASE_APP_ID=your-web-app-id
+RECAPTCHA_ENTERPRISE_SITE_KEY=your-recaptcha-enterprise-site-key
 FIREBASE_AI_LOCATION=global
 FIREBASE_AI_MODEL=gemini-3.5-flash-lite
+APP_CHECK_DEBUG=true
 ```
 
-The Firebase web configuration is public client configuration, not a service-account credential. Do not put private keys or service-account JSON in the browser.
+The web configuration values are public client configuration, not service-account credentials. Never add a private key or service-account JSON to the browser.
 
-### Configure App Check for AI Logic
+For local development, the app sets the Firebase App Check debug-token flag before App Check initialization. Run SpeakEasy, open the browser console, copy the debug token Firebase prints, and register it under the web app's **Manage debug tokens** in Firebase Console. Do not commit debug tokens. Set `APP_CHECK_DEBUG=false` in production.
 
-1. In Google Cloud Console, create a reCAPTCHA Enterprise **website score-based** key for your deployed domain.
-2. In Firebase Console, open **Security → App Check**.
-3. Register the web app with the reCAPTCHA Enterprise provider and enter the site key.
-4. Open **Security → App Check → APIs** and confirm that **Firebase AI Logic** is enforced.
-5. Add the site key to `.env`:
-
-```dotenv
-RECAPTCHA_ENTERPRISE_SITE_KEY=your-recaptcha-enterprise-site-key
-```
-
-For local development, leave `APP_CHECK_DEBUG=true`. The code sets `self.FIREBASE_APPCHECK_DEBUG_TOKEN = true` before App Check initializes. Run the app, open the browser console, copy the debug token Firebase prints, and register it under the app's **Manage debug tokens** page in Firebase Console. The provider still needs a reCAPTCHA Enterprise site-key value in the app configuration, but the debug token is used for local attestation. Do not add `localhost` to the production key's allowed domains, do not commit a debug token, and do not use debug mode in production.
-
-For production set:
-
-```dotenv
-APP_CHECK_DEBUG=false
-```
-
-The app initializes App Check only to protect Firebase AI Logic. It does not use Firebase Authentication, Firestore, Storage or Firebase Admin.
-
-## 4. Configure Gemini Nano in Chrome
+## Gemini Nano setup
 
 1. Use Chrome Desktop 139 or newer.
-2. Open `chrome://flags/#prompt-api-for-gemini-nano-multimodal-input`.
-3. Enable the flag if it is available, then restart Chrome.
-4. Open the app and use **Generate 14 questions** or **Generate Hot Take**. Those user actions start the model preparation step.
-5. Keep the browser open while Chrome downloads the on-device model. The first download can take several minutes.
+2. Open `chrome://flags/#prompt-api-for-gemini-nano-multimodal-input` and enable the flag if it is available.
+3. Restart Chrome.
+4. Generate questions or a Hot Take. The user action starts device-model preparation.
+5. Keep Chrome open while it downloads the model. Initial setup may take several minutes.
 
-When Nano is already available, prompt generation can run on-device. While Nano is downloading or unavailable, `PREFER_ON_DEVICE` uses the Firebase AI Logic cloud fallback. The app reads `response.inferenceSource` and displays the actual route used.
+When Gemini Nano is ready, generation prefers on-device inference. If it is unavailable, Firebase AI Logic can fall back to cloud inference. SpeakEasy reports the actual `response.inferenceSource` value.
 
-Coaching uses `PREFER_IN_CLOUD`. It prefers cloud Gemini and uses the hybrid fallback behaviour configured by Firebase AI Logic.
+## Browser-local history and usage
 
-## 5. Data and history
+No server database is configured or needed.
 
-The app does not use Firebase data products.
+- Completed sessions, transcripts, scorecards, retry state, and daily usage are stored in browser IndexedDB.
+- The browser prunes session history after 30 days.
+- The daily practice allowance is counted per browser profile and UTC date.
+- Clearing browser site data removes history and resets the local allowance.
+- History does not sync across devices or browsers.
+- The Python API validates coaching output and recomputes the overall score but does not save the transcript or session.
 
-- Local development: SQLite at `data/speakeasy.sqlite3`.
-- Vercel: PostgreSQL through `DATABASE_URL` is required because Vercel function filesystems are ephemeral.
-- A signed, HttpOnly guest cookie scopes records to the same browser. There is no sign-in or cross-device account sync in this version.
-- The free daily allowance is scoped to this guest cookie. Clearing cookies or using another browser creates a new guest identity and can reset that allowance. This anonymous model is suitable for a no-account prototype, not strong per-person fraud prevention.
-- Clearing the browser cookie removes the link to that guest's history. This is disclosed in the Privacy dialog.
-- Session data is hidden after 30 days and expired records are deleted during API activity. `vercel.json` also schedules daily cleanup at 04:00 UTC; configure `CRON_SECRET` in Vercel so the scheduled request is authorized.
+This no-account, browser-local approach is intentional for this Vercel deployment. Do not add SQLite, PostgreSQL, a server-side database, or database environment variables unless the product requirements change to include cross-device accounts or centrally enforced usage limits.
 
-Example PostgreSQL variable:
+## Deploy to Vercel
 
-```dotenv
-DATABASE_URL=postgresql+psycopg://USER:PASSWORD@HOST:5432/DATABASE?sslmode=require
-```
-
-Use the connection string from your chosen managed PostgreSQL provider. The database is separate from Firebase AI Logic.
-
-## 6. Deploy to Vercel
-
-1. Push this project to a Git repository.
+1. Push the project to a Git repository.
 2. Import the repository into [Vercel](https://vercel.com/).
-3. Vercel detects `main.py` as the FastAPI application. `vercel.json` sets the Python function runtime limits, security headers and daily cleanup schedule.
-4. Add the following environment variables in Vercel Project Settings:
+3. Set the Vercel Root Directory to the folder containing `main.py`, `requirements.txt`, and `vercel.json`.
+4. Add these environment variables in Vercel Project Settings:
 
 ```dotenv
-APP_SECRET=long-random-secret-value
 APP_ENV=production
-DATABASE_URL=postgresql+psycopg://USER:PASSWORD@HOST:5432/DATABASE?sslmode=require
 FIREBASE_API_KEY=your-web-api-key
 FIREBASE_PROJECT_ID=your-project-id
 FIREBASE_APP_ID=your-web-app-id
@@ -208,29 +161,36 @@ FIREBASE_AI_MODEL=gemini-3.5-flash-lite
 APP_CHECK_DEBUG=false
 FREE_DAILY_SESSIONS=5
 SESSION_RETENTION_DAYS=30
-CRON_SECRET=another-long-random-secret
 ```
 
 5. Add the deployed Vercel domain to the reCAPTCHA Enterprise key's allowed domains.
-6. Deploy. No npm build command is required.
-7. Test `/health`, generate questions, generate a Hot Take, complete a session, check History, and test a single free retry.
+6. Deploy. Vercel detects `main.py` as the FastAPI entry point and serves static files from `public/`.
+7. Verify `/health`, generate a question set, generate a Hot Take, complete a drill, open History, and use the one free retry.
 
-Vercel's scheduled cleanup requires Cron Jobs to be enabled for the selected Vercel plan. Even without the scheduled run, expired sessions are filtered from history and removed on subsequent API requests.
+There is no `DATABASE_URL`, external database setup, Vercel Cron job, Node build, or storage service configuration.
 
-## 7. Test
+## Tests
 
-Install requirements, then run:
+Install development dependencies and run:
 
 ```bash
+pip install -r requirements-dev.txt
 python -m pytest -q
-```
-
-Check Python syntax:
-
-```bash
 python -m compileall -q main.py app tests
 ```
 
-The running application does not require Node.js. If Node.js is available on a developer workstation, the two browser modules can optionally be syntax-checked with `node --input-type=module --check < public/static/js/app.js` and the same command for `firebase-ai.js`. This is an optional check only; it is not part of the runtime or deployment build.
+The app does not need Node.js to run. If Node is available, the browser modules can optionally be syntax-checked:
 
-Firebase AI Logic model calls and Gemini Nano require a configured Firebase project and a supported Chrome desktop browser; automated unit tests do not replace those live integration tests.
+```bash
+node --check --input-type=module < public/static/js/app.js
+node --check --input-type=module < public/static/js/firebase-ai.js
+node --check --input-type=module < public/static/js/local-store.js
+```
+
+Automated tests do not replace live Firebase AI Logic, Gemini Nano, microphone, accessibility, or Vercel deployment verification.
+
+## Error pages
+
+- Unknown browser pages return the branded `templates/404.html` with HTTP 404.
+- Unexpected browser errors return `templates/500.html` with HTTP 500.
+- API errors remain JSON responses with their proper HTTP status.

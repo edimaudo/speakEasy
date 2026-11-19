@@ -1,4 +1,15 @@
 import { isAIReady, generateQuestionSet, generateHotTake, coachTranscript } from "./firebase-ai.js";
+import {
+  getDailyUsage,
+  reserveDailyUsage,
+  releaseDailyReservation,
+  consumeDailyReservation,
+  saveSession,
+  appendRetry,
+  getSession,
+  listSessions,
+  deleteSession
+} from "./local-store.js";
 
 const $ = (selector) => document.querySelector(selector);
 const $$ = (selector) => [...document.querySelectorAll(selector)];
@@ -81,10 +92,12 @@ async function api(path, options = {}) {
 
 async function refreshUsage() {
   try {
-    const usage = await api("/api/usage");
-    $("#question-set-help").textContent = `14 questions · ${Math.max(0, usage.limit - usage.used)} of ${usage.limit} free sessions left today.`;
+    const limit = Number(window.SPEAKEASY_CONFIG?.dailyLimit || 5);
+    const usage = await getDailyUsage(limit);
+    $("#question-set-help").textContent = `14 questions · ${Math.max(0, usage.limit - usage.used)} of ${usage.limit} free sessions left today on this browser.`;
   } catch (error) {
-    console.warn("Usage could not be loaded.", error);
+    console.warn("Local usage could not be loaded.", error);
+    $("#question-set-help").textContent = "14 questions · Session allowance is stored in this browser.";
   }
 }
 
@@ -253,23 +266,19 @@ function setTranscript(text) {
 }
 
 async function reserveUsage() {
-  const reservationId = crypto.randomUUID();
-  const response = await api("/api/usage/reserve", {
-    method: "POST",
-    body: JSON.stringify({ reservation_id: reservationId, purpose: state.session.mode })
-  });
-  state.reservationId = response.reservationId;
+  const limit = Number(window.SPEAKEASY_CONFIG?.dailyLimit || 5);
+  const reservation = await reserveDailyUsage(limit, state.session.mode);
+  state.reservationId = reservation.reservationId;
+  await refreshUsage();
 }
 
 async function releaseReservation() {
   if (!state.reservationId) return;
   try {
-    await api("/api/usage/release", {
-      method: "POST",
-      body: JSON.stringify({ reservation_id: state.reservationId })
-    });
+    await releaseDailyReservation(state.reservationId);
+    await refreshUsage();
   } catch (error) {
-    console.warn("Unable to release an unused session reservation.", error);
+    console.warn("Unable to release the unused local session allowance.", error);
   }
   state.reservationId = null;
 }
@@ -518,6 +527,7 @@ async function analyseResponse() {
   setBusy(button, true, "Coaching your response…");
   state.transcript = transcript;
   const duration = Math.max(1, Math.min(state.duration, Math.round((Date.now() - state.startedAt) / 1000)));
+  let sessionSaved = false;
   try {
     if (state.attempt === 1 && !state.reservationId) await reserveUsage();
     const fillerCounts = countFillers(transcript);
@@ -534,34 +544,50 @@ async function analyseResponse() {
     });
     const sessionId = state.session.session_id || crypto.randomUUID();
     state.session.session_id = sessionId;
-    const payload = {
+    const validation = await api("/api/scorecard/validate", {
+      method: "POST",
+      body: JSON.stringify({ transcript, scorecard: coaching.coaching, mode: state.session.mode })
+    });
+    const attempt = {
+      attempt: state.attempt,
       transcript,
-      scorecard: coaching.coaching,
-      inference_source: coaching.inferenceSource,
-      duration_seconds: duration,
-      filler_count: Object.values(fillerCounts).reduce((sum, value) => sum + value, 0)
+      scorecard: validation.scorecard,
+      inferenceSource: coaching.inferenceSource,
+      durationSeconds: duration,
+      fillerCount: Object.values(fillerCounts).reduce((sum, value) => sum + value, 0),
+      createdAt: Date.now(),
+      overallScore: validation.overallScore
     };
+
     let saved;
     if (state.attempt === 1) {
-      saved = await api("/api/sessions", {
-        method: "POST",
-        body: JSON.stringify({
-          ...payload,
-          session_id: sessionId,
-          reservation_id: state.reservationId,
-          mode: state.session.mode,
-          goal: state.session.goal || "",
-          category: state.session.category || "",
-          heat: state.session.heat || "",
-          prompt: state.session.prompt,
-          constraint_phrase: state.session.constraint_phrase || ""
-        })
-      });
-      state.reservationId = null;
+      const createdAt = Date.now();
+      saved = {
+        id: sessionId,
+        mode: state.session.mode,
+        goal: state.session.goal || "",
+        category: state.session.category || "",
+        heat: state.session.heat || "",
+        prompt: state.session.prompt,
+        constraint: state.session.constraint_phrase || "",
+        createdAt,
+        expiresAt: createdAt + Number(window.SPEAKEASY_CONFIG?.retentionDays || 30) * 86400000,
+        retryUsed: false,
+        latest: attempt,
+        attempts: [attempt]
+      };
+      await saveSession(saved);
+      sessionSaved = true;
+      if (state.reservationId) {
+        await consumeDailyReservation(state.reservationId);
+        state.reservationId = null;
+      }
     } else {
-      saved = await api(`/api/sessions/${sessionId}/retry`, { method: "POST", body: JSON.stringify(payload) });
+      saved = await appendRetry(sessionId, attempt);
+      sessionSaved = true;
     }
-    renderScorecard(saved.session, state.attempt);
+
+    renderScorecard(saved, state.attempt);
     if (state.session.questionIndex !== undefined) {
       state.completed.add(state.session.questionIndex);
       state.unlocked = Math.min(14, Math.max(3, 3 + state.completed.size));
@@ -570,7 +596,7 @@ async function analyseResponse() {
     await refreshUsage();
     toast("Your coaching report is ready.", "success");
   } catch (error) {
-    if (state.attempt === 1) await releaseReservation();
+    if (state.attempt === 1 && !sessionSaved) await releaseReservation();
     toast(error.message, "error");
     $("#recording-status").textContent = "Analysis could not be completed. Your transcript remains available; try again.";
     $("#analyse-response").hidden = false;
@@ -656,12 +682,12 @@ async function loadHistory() {
   const list = $("#history-list");
   list.innerHTML = '<div class="empty-state">Loading your sessions…</div>';
   try {
-    const result = await api("/api/sessions?limit=30");
-    if (!result.sessions.length) {
+    const sessions = await listSessions(30);
+    if (!sessions.length) {
       list.innerHTML = '<div class="empty-state">No completed sessions yet. Your practice history will appear here.</div>';
       return;
     }
-    list.innerHTML = result.sessions.map((session) => {
+    list.innerHTML = sessions.map((session) => {
       const latest = session.latest;
       const title = session.mode === "hot-take" ? `${session.category} · ${session.heat}` : session.goal;
       return `<article class="history-item"><div class="history-main"><div><span class="history-type">${session.mode === "hot-take" ? "HOT TAKE" : "STRUCTURED PRACTICE"}</span><h3>${escapeHtml(title)}</h3><p>${escapeHtml(session.prompt)}</p><span class="history-date">${new Date(session.createdAt).toLocaleString()}</span></div><div class="history-score"><strong>${Number(latest?.overallScore ?? 0).toFixed(1).replace(/\.0$/, "")}</strong><span>/100</span><small>${session.attempts.length} ${session.attempts.length === 1 ? "attempt" : "attempts"}</small></div></div><div class="history-actions"><button class="text-button" data-history-open="${session.id}">View feedback</button><button class="text-button destructive" data-history-delete="${session.id}">Delete</button></div></article>`;
@@ -673,8 +699,7 @@ async function loadHistory() {
 
 async function openHistorySession(sessionId) {
   try {
-    const { sessions } = await api("/api/sessions?limit=50");
-    const saved = sessions.find((item) => item.id === sessionId);
+    const saved = await getSession(sessionId);
     if (!saved) throw new Error("That session is no longer available.");
     state.session = {
       session_id: saved.id,
@@ -685,6 +710,8 @@ async function openHistorySession(sessionId) {
       prompt: saved.prompt,
       constraint_phrase: saved.constraint
     };
+    state.duration = saved.mode === "hot-take" ? 90 : 60;
+    state.attempt = saved.attempts.length;
     state.lastSavedSession = saved;
     await switchView("history");
     renderScorecard(saved, saved.attempts.length);
@@ -696,8 +723,8 @@ async function openHistorySession(sessionId) {
 async function deleteHistorySession(sessionId) {
   if (!confirm("Delete this practice session and its transcript?")) return;
   try {
-    await api(`/api/sessions/${sessionId}`, { method: "DELETE" });
-    loadHistory();
+    await deleteSession(sessionId);
+    await loadHistory();
     toast("Session deleted.", "success");
   } catch (error) {
     toast(error.message, "error");
@@ -783,6 +810,9 @@ function init() {
     toast("Add Firebase AI Logic configuration to the Python environment to enable practice generation and coaching.", "error");
   }
   refreshUsage();
+  // Listing prunes expired records during startup, so old history is removed
+  // after the 30-day retention window without requiring a manual History visit.
+  listSessions(1).catch((error) => console.warn("Local history cleanup could not run.", error));
   renderQuestions();
 }
 

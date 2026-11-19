@@ -1,4 +1,3 @@
-from pathlib import Path
 import pytest
 from fastapi.testclient import TestClient
 
@@ -7,12 +6,10 @@ from main import create_app
 
 
 @pytest.fixture()
-def client(tmp_path: Path):
+def client():
     settings = Settings(
-        app_secret="test-secret-that-is-long-enough",
         app_env="test",
-        database_url=str(tmp_path / "test.sqlite3"),
-        free_daily_sessions=2,
+        free_daily_sessions=5,
         retention_days=30,
         firebase_api_key="",
         firebase_project_id="",
@@ -22,6 +19,5 @@ def client(tmp_path: Path):
         firebase_ai_model="gemini-3.5-flash-lite",
         app_check_debug=True,
     )
-    app = create_app(f"sqlite:///{tmp_path / 'test.sqlite3'}", settings)
-    with TestClient(app) as test_client:
+    with TestClient(create_app(settings)) as test_client:
         yield test_client

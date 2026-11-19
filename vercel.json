@@ -5,12 +5,6 @@
       "maxDuration": 60
     }
   },
-  "crons": [
-    {
-      "path": "/api/maintenance/cleanup",
-      "schedule": "0 4 * * *"
-    }
-  ],
   "headers": [
     {
       "source": "/(.*)",

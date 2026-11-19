@@ -16,9 +16,7 @@ def _bool(name: str, default: bool = False) -> bool:
 
 @dataclass(frozen=True)
 class Settings:
-    app_secret: str = os.getenv("APP_SECRET", "local-development-secret-change-before-deploy")
     app_env: str = os.getenv("APP_ENV", "development")
-    database_url: str = os.getenv("DATABASE_URL", "")
     free_daily_sessions: int = int(os.getenv("FREE_DAILY_SESSIONS", "5"))
     retention_days: int = int(os.getenv("SESSION_RETENTION_DAYS", "30"))
     firebase_api_key: str = os.getenv("FIREBASE_API_KEY", "")
@@ -35,7 +33,12 @@ class Settings:
 
     @property
     def firebase_ready(self) -> bool:
-        return bool(self.firebase_api_key and self.firebase_project_id and self.firebase_app_id and self.recaptcha_site_key)
+        return bool(
+            self.firebase_api_key
+            and self.firebase_project_id
+            and self.firebase_app_id
+            and self.recaptcha_site_key
+        )
 
     @property
     def firebase_config(self) -> dict[str, str]:
