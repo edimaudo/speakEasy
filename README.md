@@ -30,24 +30,6 @@ speakeasy/
 └── tests/                     # Python API, scoring and architecture tests
 ```
 
-### Responsibilities
-
-- **Python / FastAPI:** routes, business rules, daily session limits, session persistence, score validation, history and retention.
-- **HTML / CSS:** the user interface, served by FastAPI.
-- **Plain JavaScript:** native browser interaction, microphone permission, waveform, on-device speech recognition, filler telemetry and the Firebase AI Logic client SDK.
-- **Firebase AI Logic:** Gemini Nano prompt generation and Gemini cloud-preferred coaching. The Firebase web SDK is loaded directly from Google's CDN; there is no JavaScript build step.
-- **App Check:** the required abuse-protection mechanism for Firebase AI Logic requests. It is initialized only to protect AI Logic. No other Firebase products are integrated.
-- **Database:** SQLite for local development. Use persistent PostgreSQL for Vercel deployments. This is application storage, not a Firebase product.
-
-Firebase AI Logic's hybrid web SDK is JavaScript-only. The project therefore keeps the browser integration in `public/static/js/firebase-ai.js`; it does not make the application a JavaScript or TypeScript app. That file imports only Firebase app initialization, Firebase AI Logic, and App Check protection. No Firebase Authentication, Firestore, Storage, Realtime Database, Firebase Admin SDK, or second Gemini SDK is used.
-
-## HTTP error pages
-
-- Unknown browser routes render a branded `templates/404.html` page and return HTTP 404.
-- Unexpected browser-side server failures render `templates/500.html` and return HTTP 500.
-- API errors remain JSON responses with their original HTTP status codes; internal exception details are logged server-side and are never exposed to the browser.
-
-## Features
 
 ### Structured Practice
 
@@ -84,17 +66,7 @@ Firebase AI Logic's hybrid web SDK is JavaScript-only. The project therefore kee
 
 **Speech fallback:** if the browser cannot provide local speech recognition, the user types or pastes a transcript. No audio-buffer upload is used, preserving the no-audio-upload privacy requirement.
 
-## 1. Requirements
-
-- Python 3.12 or newer.
-- Chrome Desktop 139 or newer for Firebase AI Logic hybrid inference and Gemini Nano.
-- A Firebase project with Firebase AI Logic enabled.
-- A reCAPTCHA Enterprise site key registered for Firebase App Check.
-- For Vercel deployment, a persistent PostgreSQL database and a Vercel account.
-
-No Node.js, npm, TypeScript compiler or frontend bundler is required.
-
-## 2. Local setup
+##  Local setup
 
 From the project directory:
 
@@ -134,7 +106,7 @@ uvicorn main:app --reload
 
 Open `http://127.0.0.1:8000`.
 
-## 3. Firebase AI Logic setup
+## Firebase AI Logic setup
 
 ### Create and enable the project
 
