@@ -1,8 +1,6 @@
 # SpeakEasy
 
-SpeakEasy is a Python-first speaking-practice application. FastAPI is the application; Jinja renders the HTML; CSS controls presentation; the browser uses two small plain-JavaScript modules for microphone capture and Firebase AI Logic.
-
-There is no React, TypeScript, Tailwind, Vite, Node build, npm dependency tree, Firebase Authentication, Firestore, Cloud Storage, Firebase Admin SDK, or second Gemini integration.
+SpeakEasy is a 
 
 ## Architecture
 
