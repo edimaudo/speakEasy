@@ -162,19 +162,48 @@ def test_main_interface_has_no_eyebrows_footers_or_brand_mark():
     assert ".footer" not in css
 
 
-def test_landing_page_integrates_structured_practice_and_hot_takes():
+def test_landing_page_presents_one_product_with_two_practice_formats():
     markup = (ROOT / "templates" / "index.html").read_text()
     assert 'id="view-practice"' in markup
-    assert 'id="structured-practice"' in markup
-    assert 'id="hot-takes"' in markup
-    assert 'id="view-arena"' not in markup
-    practice_start = markup.index('id="view-practice"')
+    assert 'id="practice-workspace"' in markup
+    assert 'role="tablist" aria-label="Practice format"' in markup
+    assert 'data-practice-mode="structured"' in markup
+    assert 'data-practice-mode="hot-take"' in markup
+    assert 'data-practice-panel="structured"' in markup
+    assert 'data-practice-panel="hot-take" hidden' in markup
+    assert 'id="hot-take-practice"' in markup
+    assert 'aria-controls="hot-take-practice"' in markup
+    assert 'data-view="arena"' not in markup
+    assert 'Hot Take Arena' not in markup
+    assert 'data-view="arena"' not in markup
+    assert 'Hot Take</button>\n' not in markup
+
+    # Both activities live inside one shared workspace, not side-by-side product cards.
+    workspace_start = markup.index('id="practice-workspace"')
     history_start = markup.index('id="view-history"')
-    practice_hub = markup[practice_start:history_start]
-    assert practice_hub.index('id="structured-practice"') < practice_hub.index('id="hot-takes"')
+    workspace = markup[workspace_start:history_start]
+    assert workspace.index('data-practice-panel="structured"') < workspace.index('data-practice-panel="hot-take"')
+    assert workspace.count('class="practice-mode-panel"') == 2
+    assert 'experience-grid' not in markup
+    assert 'experience-panel' not in markup
+
     app_js = (ROOT / "public" / "static" / "js" / "app.js").read_text()
-    assert 'view === "arena"' in app_js
-    assert 'scrollIntoView' in app_js
+    assert 'function setPracticeMode(mode, moveFocus = false)' in app_js
+    assert 'setPracticeMode("structured")' in app_js
+    assert 'setPracticeMode(tabs[next].dataset.practiceMode, true)' in app_js
+    assert 'view === "arena"' not in app_js
+
+    css = (ROOT / "public" / "static" / "css" / "styles.css").read_text()
+    assert '.practice-workspace {' in css
+    assert '.practice-switcher {' in css
+    assert '.practice-tab.selected {' in css
+    assert '.experience-grid' not in css
+    assert '.arena-panel' not in css
+    assert '.arena-controls' not in css
+    assert '.arena-guidance' not in css
+
+    ai_prompts = (ROOT / "public" / "static" / "js" / "firebase-ai.js").read_text()
+    assert "Hot Take Arena" not in ai_prompts
 
 
 def test_removed_landing_copy_and_ai_setup_banner():

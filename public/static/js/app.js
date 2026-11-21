@@ -16,6 +16,7 @@ const $$ = (selector) => [...document.querySelectorAll(selector)];
 
 const state = {
   view: "practice",
+  practiceMode: "structured",
   goal: "Interview",
   questions: [],
   unlocked: 3,
@@ -132,11 +133,28 @@ async function switchView(view) {
 
   if (historyActive) {
     await loadHistory();
-  } else if (view === "arena") {
-    requestAnimationFrame(() => $("#hot-takes").scrollIntoView({ behavior: "smooth", block: "start" }));
   } else {
     window.scrollTo({ top: 0, behavior: "smooth" });
   }
+}
+
+function setPracticeMode(mode, moveFocus = false) {
+  const allowed = new Set(["structured", "hot-take"]);
+  if (!allowed.has(mode)) return;
+  state.practiceMode = mode;
+
+  $$('[data-practice-mode]').forEach((tab) => {
+    const selected = tab.dataset.practiceMode === mode;
+    tab.classList.toggle("selected", selected);
+    tab.setAttribute("aria-selected", String(selected));
+    tab.tabIndex = selected ? 0 : -1;
+    if (selected && moveFocus) tab.focus();
+  });
+
+  $$('[data-practice-panel]').forEach((panel) => {
+    const selected = panel.dataset.practicePanel === mode;
+    panel.hidden = !selected;
+  });
 }
 
 function renderQuestions() {
@@ -752,6 +770,21 @@ async function deleteHistorySession(sessionId) {
 
 function setupEvents() {
   $$(".nav-link").forEach((button) => button.addEventListener("click", () => switchView(button.dataset.view)));
+  $$('[data-practice-mode]').forEach((tab) => {
+    tab.addEventListener("click", () => setPracticeMode(tab.dataset.practiceMode));
+    tab.addEventListener("keydown", (event) => {
+      const tabs = $$('[data-practice-mode]');
+      const current = tabs.indexOf(tab);
+      let next = current;
+      if (event.key === "ArrowRight") next = (current + 1) % tabs.length;
+      else if (event.key === "ArrowLeft") next = (current - 1 + tabs.length) % tabs.length;
+      else if (event.key === "Home") next = 0;
+      else if (event.key === "End") next = tabs.length - 1;
+      else return;
+      event.preventDefault();
+      setPracticeMode(tabs[next].dataset.practiceMode, true);
+    });
+  });
   $$(".goal-card").forEach((button) => button.addEventListener("click", () => {
     state.goal = button.dataset.goal;
     $$(".goal-card").forEach((card) => {
@@ -799,7 +832,6 @@ function setupEvents() {
     $("#scorecard-panel").hidden = true;
     state.session = null;
     if (state.view === "history") loadHistory();
-    else if (state.view === "arena") $("#hot-takes").scrollIntoView({ behavior: "smooth", block: "start" });
     else window.scrollTo({ top: 0, behavior: "smooth" });
   });
   $("#close-session").addEventListener("click", async () => {
@@ -822,6 +854,7 @@ function setupEvents() {
 
 function init() {
   setupEvents();
+  setPracticeMode("structured");
   $("#job-description-wrap").hidden = false;
   $("#analyse-response").hidden = true;
   if (isAIReady()) setAIStatus("Firebase AI Logic ready", "ready");

@@ -183,7 +183,7 @@ export async function generateHotTake(category, heat, customTopic = "") {
     Spicy: "A strong contrarian position that forces a clear yes-or-no stance.",
     "Extra hot": "A rapid-fire curveball with a mandatory forbidden word or phrase. State the rule explicitly using the sentence: You cannot use the word ‘TERM’."
   }[heat];
-  const prompt = `Create one original Hot Take Arena prompt. ${subject} Heat: ${heat}. ${heatDirection}
+  const prompt = `Create one original Hot Take practice prompt. ${subject} Heat: ${heat}. ${heatDirection}
 The statement must be 12 to 42 words. For Extra hot, include exactly one clear forbidden word or short phrase in the statement, and put that same term in the constraint property. For other levels, set constraint to an empty string. Return JSON with statement, context, and constraint.`;
   const result = await hotTakeModel.generateContent(prompt);
   const parsed = parseJson(result.response.text());
@@ -204,7 +204,7 @@ export async function coachTranscript({ transcript, prompt, mode, goal, category
   startDevicePreparation(coachModel);
   const hotTake = mode === "hot-take";
   const taskDetails = hotTake
-    ? `This is a Hot Take Arena response. Category: ${category}. Heat: ${heat}. Evaluate whether the speaker took a clear side and include stanceClarity (0-100), stanceVerdict and punchierHookRewrite. ${constraintPhrase ? `Mandatory forbidden term: \"${constraintPhrase}\". Check whether the speaker used this term. If they did, explicitly mention the violation in the diagnosis or nextFocus. If they did not, acknowledge compliance.` : ""}`
+    ? `This is a Hot Take practice response. Category: ${category}. Heat: ${heat}. Evaluate whether the speaker took a clear side and include stanceClarity (0-100), stanceVerdict and punchierHookRewrite. ${constraintPhrase ? `Mandatory forbidden term: \"${constraintPhrase}\". Check whether the speaker used this term. If they did, explicitly mention the violation in the diagnosis or nextFocus. If they did not, acknowledge compliance.` : ""}`
     : `This is a structured ${goal} speaking drill.`;
   const request = `You are SpeakEasy, a precise speaking coach. Evaluate the user's transcript against the assigned prompt.
 Assigned prompt: <assigned_prompt>${String(prompt).slice(0, 700)}</assigned_prompt>

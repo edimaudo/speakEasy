@@ -21,7 +21,6 @@
       <a class="brand" href="/" aria-label="SpeakEasy home">SpeakEasy<span class="brand-period">.</span></a>
       <nav class="main-nav" aria-label="Main navigation">
         <button class="nav-link active" data-view="practice" aria-current="page">Practice</button>
-        <button class="nav-link" data-view="arena">Hot Take Arena</button>
         <button class="nav-link" data-view="history">History</button>
       </nav>
       <div class="topbar-right">
@@ -31,23 +30,37 @@
     </header>
 
     <main>
-      <section id="view-practice" class="view active" aria-label="Speaking practice">
+      <section id="view-practice" class="view active" aria-label="SpeakEasy practice">
         <section class="intro-row">
           <div class="intro-copy-block">
-            <h1>Make your point.<br><em>Make it land.</em></h1>
-            <p class="intro-copy">Build a stronger answer or put an opinion under pressure. Choose a practice path and get straight into it.</p>
-          </div>
-          <div class="intro-aside" aria-hidden="true">
-            <span class="intro-aside-line"></span>
-            <span>Clear thinking<br>starts out loud.</span>
+            <h1>Find your point.<br><em>Make it clear.</em></h1>
+            <p class="intro-copy">One place to strengthen how you communicate — from considered answers to thinking on your feet. Choose a format, speak, and get specific coaching.</p>
           </div>
         </section>
 
-        <div class="experience-grid">
-          <section id="structured-practice" class="experience-panel structured-panel" aria-labelledby="practice-heading">
+        <section id="practice-workspace" class="practice-workspace" aria-labelledby="workspace-heading">
+          <div class="workspace-heading">
+            <div>
+              <h2 id="workspace-heading">Choose a practice format</h2>
+              <p>Every session follows the same loop: prompt, timed response and focused coaching.</p>
+            </div>
+          </div>
+
+          <div class="practice-switcher" role="tablist" aria-label="Practice format">
+            <button id="tab-structured" class="practice-tab selected" type="button" role="tab" aria-selected="true" aria-controls="structured-practice" data-practice-mode="structured">
+              <span>Structured practice</span>
+              <small>Interviews · Presentations · Everyday speaking</small>
+            </button>
+            <button id="tab-hot-take" class="practice-tab" type="button" role="tab" aria-selected="false" aria-controls="hot-take-practice" data-practice-mode="hot-take" tabindex="-1">
+              <span>Hot Take</span>
+              <small>Spontaneous thinking · Defend a position</small>
+            </button>
+          </div>
+
+          <section id="structured-practice" class="practice-mode-panel" role="tabpanel" aria-labelledby="tab-structured" data-practice-panel="structured">
             <div class="panel-heading">
-              <h2 id="practice-heading">Practice with purpose</h2>
-              <p>Build a focused answer for an interview, presentation or everyday conversation.</p>
+              <h3>Build a focused response</h3>
+              <p>Prepare for an interview, shape a presentation or practise everyday conversations.</p>
             </div>
 
             <div class="goal-grid" role="group" aria-label="Practice goal">
@@ -76,20 +89,20 @@
                 <h3>Your question set</h3>
                 <p id="question-set-help">14 questions · Your first three unlock immediately.</p>
               </div>
-              <button id="generate-questions" class="button button-secondary">Generate questions <span aria-hidden="true">↗</span></button>
+              <button id="generate-questions" class="button button-hot">Generate questions <span aria-hidden="true">↗</span></button>
             </div>
             <div id="question-list" class="question-list" aria-live="polite">
               <div class="empty-state compact-empty"><p>Generate a question set to begin.</p></div>
             </div>
           </section>
 
-          <section id="hot-takes" class="experience-panel arena-panel" aria-labelledby="arena-heading">
+          <section id="hot-take-practice" class="practice-mode-panel" role="tabpanel" aria-labelledby="tab-hot-take" data-practice-panel="hot-take" hidden>
             <div class="panel-heading">
-              <h2 id="arena-heading">Take a position</h2>
-              <p>Choose a debate, commit to a view and make the case without hedging.</p>
+              <h3>Think on your feet</h3>
+              <p>Respond to a challenging idea, choose a side and make your case without hedging.</p>
             </div>
 
-            <div class="arena-controls">
+            <div class="prompt-controls">
               <div class="field-wrap">
                 <label for="hot-category">Choose a domain</label>
                 <select id="hot-category">
@@ -111,10 +124,10 @@
                   <label class="heat-option extra"><input type="radio" name="heat" value="Extra hot"><span>Extra hot</span><small>Curveball constraint</small></label>
                 </div>
               </fieldset>
-              <button id="generate-hot-take" class="button button-hot button-wide">Generate a hot take <span aria-hidden="true">↗</span></button>
+              <button id="generate-hot-take" class="button button-hot">Generate a prompt <span aria-hidden="true">↗</span></button>
             </div>
 
-            <div class="arena-guidance">
+            <div class="prompt-guidance">
               <span class="guidance-rule"></span>
               <p>State your position. Support it with one real example. Finish with a line people remember.</p>
             </div>
@@ -123,10 +136,10 @@
               <div class="prompt-meta"><span id="hot-meta-category"></span><span id="hot-meta-heat"></span></div>
               <p id="hot-take-statement" class="hot-take-statement"></p>
               <p id="hot-take-constraint" class="constraint-text" hidden></p>
-              <div class="hot-take-actions"><button id="start-hot-take" class="button button-hot">Take the challenge <span aria-hidden="true">→</span></button><span class="prompt-source" id="hot-prompt-source"></span></div>
+              <div class="hot-take-actions"><button id="start-hot-take" class="button button-hot">Start 90-second take <span aria-hidden="true">→</span></button><span class="prompt-source" id="hot-prompt-source"></span></div>
             </div>
           </section>
-        </div>
+        </section>
       </section>
 
       <section id="view-history" class="view history-view" aria-labelledby="history-heading" hidden>

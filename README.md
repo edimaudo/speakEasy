@@ -1,4 +1,4 @@
-# SpeakEasy + Hot Takes
+# SpeakEasy
 
 SpeakEasy is a Python-first speaking practice application. FastAPI serves the application and owns its server-side validation. The browser uses a small amount of plain JavaScript for microphone access, local speech recognition, timers, IndexedDB history, and the Firebase AI Logic web SDK.
 
@@ -20,7 +20,7 @@ History and the daily practice allowance belong to the user's current browser pr
 
 ## Interface design
 
-The initial Practice page presents both workflows together: Structured Practice and Hot Take Arena are visible side by side on desktop and stack on smaller screens. The Hot Take navigation item scrolls to its section within the same page; it does not switch to a separate application view. The interface uses a restrained editorial visual system, with no eyebrow labels, no footer, no standalone S brand tile, and a prominent Settings button.
+SpeakEasy is one product with one Practice workspace and two selectable practice formats. A single accessible selector switches between Structured practice (interviews, presentations and everyday speaking) and Hot Take (spontaneous thinking and defending a position). Only the selected format is displayed; neither format has a separate product card, separate navigation destination, or separate visual identity. The interface uses one consistent editorial visual system, no eyebrow labels, no footer, no standalone S brand tile, and a prominent Settings button.
 
 ## Features
 
@@ -31,7 +31,7 @@ The initial Practice page presents both workflows together: Structured Practice 
 - Fourteen generated questions, with the first three unlocked immediately.
 - Sixty-second speaking drills.
 
-### Hot Take Arena
+### Hot Take format
 
 - UX & Product Design, Tech & AI, Workplace Culture, and Custom Topic categories.
 - Mild, Spicy, and Extra Hot levels.
@@ -198,3 +198,7 @@ Automated tests do not replace live Firebase AI Logic, Gemini Nano, microphone, 
 - Unknown browser pages return the branded `templates/404.html` with HTTP 404.
 - Unexpected browser errors return `templates/500.html` with HTTP 500.
 - API errors remain JSON responses with their proper HTTP status.
+
+## Practice experience
+
+SpeakEasy is a single speaking-practice product. Its Practice page contains one shared workspace with two selectable formats: Structured practice and Hot Take. Selecting a format changes the activity shown inside the same workspace. The formats do not have separate landing pages, navigation destinations, product cards, or visual identities. The top navigation is limited to Practice and History.

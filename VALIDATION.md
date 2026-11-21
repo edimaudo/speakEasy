@@ -2,16 +2,13 @@
 
 ## Interface and experience updates
 
-- Combined Structured Practice and Hot Take Arena in one landing-page experience. Both paths are visible together on desktop and stack on smaller screens.
-- The Hot Take Arena navigation item scrolls to its panel within the same landing page; it no longer switches to a separate hidden view.
-- Removed all eyebrow/kicker labels from application and error templates.
-- Removed the standalone S brand-mark tile while retaining the SpeakEasy wordmark.
-- Removed the requested introductory timer copy.
-- Removed the startup “AI setup required” banner and toast. The AI status pill remains hidden until it has an actual runtime status to report.
-- Removed the main application footer and the error-page footers.
-- Replaced the small settings icon with a high-contrast, text-labelled Settings button.
-- Reworked the visual system with a warm neutral background, deep forest Hot Take panel, burnt-orange action color, sharper typography, squared panel edges, and less generic card styling.
-- Shortened practice-goal descriptions to reduce visual clutter.
+- Replaced the two-panel landing page with one SpeakEasy Practice workspace.
+- Added one accessible two-option format selector: Structured practice and Hot Take.
+- Only the selected format is displayed inside the shared workspace; neither activity has a separate product card, navigation destination, or visual identity.
+- Removed the Hot Take item from the top navigation. The top navigation now contains Practice and History only.
+- Both practice formats share the same neutral surface, typography, input styling, and primary action treatment.
+- Retained the unified SpeakEasy headline, brand wordmark, prominent Settings button, and History access.
+- Removed all eyebrow/kicker labels, the standalone S brand-mark tile, and application/error-page footers.
 
 ## IndexedDB error correction
 
@@ -25,12 +22,12 @@
 - `python -m pytest -q`: **35 passed**.
 - Python compilation: passed.
 - JavaScript ES-module syntax checks for `app.js`, `firebase-ai.js`, and `local-store.js`: passed.
-- CSS parsing: **221 top-level rules, zero syntax errors**.
+- CSS parsing: **224 top-level rules, zero syntax errors**.
 - HTML checks: no duplicate IDs, no eyebrow labels, and no footer elements in the application, 404, or 500 templates.
-- Landing-page checks confirm both workflows are rendered inside the same initial page.
+- Landing-page checks confirm one workspace, two accessible tabs, only one active panel at a time, and no separate Hot Take navigation or side-by-side product panels.
 - Settings control is visibly labelled and does not depend on a footer.
 - IndexedDB reconnection and user-facing error mapping checks: passed.
 
 ## External verification still required
 
-A live Chromium interactive test could not be completed in this environment because browser navigation was blocked by the execution environment. The following therefore remain unverified: real-browser rendering at desktop and mobile breakpoints, interactive navigation, microphone capture, screen-reader behavior, live Firebase AI Logic requests, Gemini Nano device inference, and deployment to Vercel. Run those checks in the configured development and production browsers before client launch.
+The HTML and stylesheet were rendered in headless Chromium for visual review at desktop dimensions. Responsive layout checks at 1440px, 768px, and 390px reported no horizontal overflow. Full application navigation and microphone end-to-end tests remain unverified because browser navigation to the local FastAPI server was blocked by the execution environment. Live Firebase AI Logic requests, Gemini Nano device inference, screen-reader behavior, and deployment to Vercel also remain unverified. Run those checks in the configured development and production browsers before client launch.
