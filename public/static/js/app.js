@@ -211,6 +211,7 @@ function renderHotTake(result, category, heat) {
   constraint.hidden = !result.constraint;
   constraint.textContent = result.constraint ? `Constraint: do not use “${result.constraint}”.` : "";
   $("#hot-prompt-source").textContent = sourceLabel(result.inferenceSource);
+  $("#hot-take-empty").hidden = true;
   $("#hot-take-result").hidden = false;
 }
 

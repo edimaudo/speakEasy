@@ -1,57 +1,39 @@
-# SpeakEasy — validation report
+# SpeakEasy — current design and regression validation
 
-## Reference-led product and landing-page redesign
+## What changed in this revision
 
-- Rebuilt the root route as a focused product landing page with a specific speaking-practice promise, one primary call to action, one interactive product preview, a three-step usage explanation, capability details, and a repeated call to action.
-- Used the landing-page guidance as a structure reference and the speech-practice app as a product-demonstration reference; no third-party branding or fabricated testimonials are used.
-- The root page introduces one product. It does not position Structured practice and spontaneous practice as separate products.
-- Kept the product wordmark as text without a standalone initial/brand tile.
-- Removed eyebrow/kicker labels and footer elements.
+- Replaced the previous marketing-style landing page with a concise page using only the product information in the PRD: 60-second structured practice, 90-second spontaneous takes, specific feedback, and the three-step practice loop.
+- Removed the extra feature rows, repeated calls to action, social-proof/pricing-style sections, and footer. The page now has one headline, one concise explanation, one product demonstration, one primary CTA, and one three-step loop.
+- Rebuilt the application screen as a speaking-practice tool rather than a generic AI/chat interface.
+- Structured practice and Hot Take now use an open two-column working layout: setup on the left, generated questions or prompt on the right.
+- Replaced purple accents, gradients, rounded panel cards, and stacked card treatments with a restrained rust accent, typography, working space, and dividers.
+- Preserved the same product identity, practice/history navigation, settings, history, timed recording, scorecard, and both practice formats.
+- Updated the 404 and 500 pages to use the same Inter wordmark and plain language as the application.
 
-## Unified application experience
+## Design and interaction checks
 
-- The application is served at `/app`; the root `/` is the marketing landing page.
-- The application has one Practice workspace with a single accessible selector for Structured practice and Hot Take.
-- Only the selected practice panel is visible. The selected tab, `aria-selected`, keyboard tab stop, and visible panel are synchronized.
-- The two formats share typography, colour tokens, controls, action styling, and workspace layout.
-- Navigation contains Practice and History; spontaneous practice is not a separate navigation destination.
+- The landing page contains exactly two content sections: the hero/product preview and the three-step practice loop.
+- The landing page has one primary CTA and does not introduce content beyond the PRD.
+- The product preview switches between structured and spontaneous practice prompts and updates the displayed duration.
+- The application uses one Practice destination with one accessible tablist for the two formats.
+- Structured and Hot Take panels keep their existing IDs and API wiring; the mode selector updates `aria-selected`, keyboard tab stop, and panel visibility.
+- Generated Hot Take prompts replace the empty prompt state instead of appearing alongside it.
+- Practice setup and prompt/question output use an open, line-based layout rather than generic AI cards or chat bubbles.
+- The primary accent is rust rather than purple; no CSS gradients or pill-shaped practice panels are used.
+- Existing theme and font-size settings are preserved. Settings text does not expose Firebase, IndexedDB, Gemini, or Gemini Nano implementation details.
+- Focus outlines remain on interactive controls, not on content sections or tab panels.
 
-## Settings and focus behavior
+## Automated checks
 
-- Settings provide working Light and Dark appearance controls.
-- Settings provide Small, Medium, and Large text-size controls.
-- Preferences are saved in local browser storage and applied on both the landing page and application before first paint.
-- User-facing Settings copy does not mention implementation products or storage technologies.
-- Content sections and tab panels do not receive an outline or highlight when focused. Interactive controls retain visible `:focus-visible` indicators for keyboard accessibility.
-
-## IndexedDB error correction
-
-- Database connections are invalidated on `close` and `versionchange` events.
-- A transaction creation attempt detects a stale/closing connection and reopens IndexedDB once.
-- Transaction-to-connection tracking ensures an aborted old transaction cannot close a newer connection.
-- Browser storage failures are translated into user-facing messages; raw IndexedDB “database connection is closing” exceptions are not displayed in the UI.
-
-## Automated validation
-
-- `python -m pytest -q`: **38 passed**.
+- `python -m pytest -q`: **41 passed**.
 - Python compilation: passed.
-- JavaScript ES-module syntax checks for `app.js`, `firebase-ai.js`, `local-store.js`, `preferences.js`, and `landing.js`: passed.
-- CSS parsing: **397 top-level rules, zero syntax errors**.
-- HTML checks: no duplicate IDs, no eyebrow labels, and no footer elements in application, landing, 404, or 500 templates.
-- Landing-page checks confirm one interactive product preview, no fake social proof, and no separate practice-product cards.
-- Settings checks confirm the theme and font-size controls exist, persist locally, and do not expose implementation details.
-- IndexedDB reconnection and user-facing error mapping checks: passed.
+- JavaScript ES-module syntax checks: passed for `app.js`, `firebase-ai.js`, `local-store.js`, `preferences.js`, and `landing.js`.
+- CSS parser validation: passed with zero syntax errors.
+- HTML/template tests: route render, static asset paths, required element IDs, and error page templates passed.
+- Existing scoring, usage, local history, IndexedDB recovery, privacy, and AI integration contract tests remain in the suite.
 
-## Browser-rendered UX checks
+## Browser verification limitation
 
-The HTML and stylesheet were rendered in headless Chromium using the application DOM and the practice-mode/settings interaction logic.
+A live browser screenshot run was attempted, but Chromium navigation to the local application and local HTML files was blocked by the execution environment (`ERR_BLOCKED_BY_ADMINISTRATOR`). The WeasyPrint print rendering is not a substitute for browser layout testing, so no claim is made that real-browser visual or responsive interaction checks passed in this revision.
 
-- Landing preview mode switches between the prepared-answer and spontaneous prompts, including the displayed duration.
-- Responsive layout checks at 1440px, 768px, and 390px reported no horizontal overflow.
-- Structured practice is selected and visible by default. Switching to Hot Take updates the selected tab, ARIA state, keyboard tab stop, and visible panel together. The transition was allowed to settle before visual capture.
-- The practice panel reports `outline-style: none`; keyboard-focus styling remains on actual controls.
-- Settings changes the page theme and increases body text from 16px to 20px when Large is selected.
-
-## External verification still required
-
-These checks require the client's configured environment and supported device: live Firebase AI Logic requests; actual Gemini Nano model availability and on-device inference; cloud fallback; microphone permission and local speech recognition; screen-reader and keyboard testing with assistive technology; and deployment to Vercel. Browser-rendered layout checks do not replace production-device acceptance testing.
+Before production release, run the landing page and application in Chrome at desktop, tablet, and mobile widths; test both practice tabs; verify Light/Dark and all font-size choices; and test keyboard/screen-reader navigation, microphone capture, Firebase AI Logic, Gemini Nano, and cloud fallback on a supported device.

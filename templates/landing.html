@@ -3,14 +3,14 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <meta name="theme-color" content="#ffffff">
-  <meta name="description" content="Practise interviews, presentations and spontaneous speaking. Get clear feedback and improve one answer at a time with SpeakEasy.">
-  <title>SpeakEasy — Speak clearly when it matters</title>
+  <meta name="theme-color" content="#f6f5f1">
+  <meta name="description" content="Practise interview, presentation and everyday speaking. Take a 90-second position on an industry prompt. Get specific feedback and try again.">
+  <title>SpeakEasy — Practise speaking</title>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;650;700;750;800&display=swap" rel="stylesheet">
   <script>
-    (function () {
+    (() => {
       try {
         const prefs = JSON.parse(localStorage.getItem("speakeasy.preferences.v1") || "{}");
         document.documentElement.dataset.theme = prefs.theme === "dark" ? "dark" : "light";
@@ -27,119 +27,44 @@
 <body class="landing-body">
   <div class="landing-shell">
     <header class="landing-header">
-      <a class="brand" href="/" aria-label="SpeakEasy home">SpeakEasy<span class="brand-period">.</span></a>
-      <nav class="landing-nav" aria-label="Main navigation">
-        <a href="#how-it-works">How it works</a>
-        <a href="#practice">What you can practise</a>
-      </nav>
-      <a class="button button-primary landing-header-cta" href="/app">Start practising <span aria-hidden="true">→</span></a>
+      <a class="brand" href="/" aria-label="SpeakEasy home">SpeakEasy</a>
     </header>
 
-    <main>
+    <main class="landing-main">
       <section class="landing-hero" aria-labelledby="landing-title">
-        <div class="landing-hero-copy">
-          <h1 id="landing-title">Speak clearly.<br><span>Make your point.</span></h1>
-          <p>Practise interviews, presentations and spontaneous speaking out loud. Get a score, see what weakens your answer and try a stronger opening.</p>
-          <div class="landing-hero-actions">
-            <a class="button button-primary landing-primary-cta" href="/app">Start practising <span aria-hidden="true">→</span></a>
-            <a class="landing-text-link" href="#how-it-works">See how it works</a>
-          </div>
-          <p class="landing-reassurance">No account required to try a practice session.</p>
+        <div class="landing-copy">
+          <h1 id="landing-title">Practise speaking.<br><span>Make your point.</span></h1>
+          <p>Prepare 60-second answers for interviews, presentations and everyday speaking, or take a 90-second position on an industry prompt. Get a score, one line to fix and a stronger opening to try.</p>
+          <a class="button button-primary landing-cta" href="/app">Start practising <span aria-hidden="true">→</span></a>
         </div>
 
-        <div class="product-preview" aria-label="Preview of the SpeakEasy practice interface">
-          <div class="preview-window-bar"><span class="preview-window-dots" aria-hidden="true"><i></i><i></i><i></i></span><span>SpeakEasy / Practice</span><span class="preview-window-status"><i></i> Ready</span></div>
-          <div class="preview-workspace">
-            <div class="preview-heading"><div><strong>Your next response</strong><span>Choose a way to practise</span></div><span class="preview-count">01 / 01</span></div>
-            <div class="preview-tabs" role="tablist" aria-label="Practice example">
-              <button type="button" class="preview-tab active" role="tab" aria-selected="true" data-demo-mode="structured">Prepare an answer</button>
-              <button type="button" class="preview-tab" role="tab" aria-selected="false" data-demo-mode="spontaneous">Think on your feet</button>
-            </div>
-            <div class="preview-prompt-area" role="tabpanel">
-              <span id="demo-context" class="preview-context">INTERVIEW PRACTICE</span>
-              <h2 id="demo-prompt">Tell me about a time you had to solve a difficult problem.</h2>
-              <p id="demo-guidance">Build your answer around the situation, the action you took and the result.</p>
-            </div>
-            <div class="preview-timer-row">
-              <div><strong id="demo-time">01:00</strong><span>TIME TO SPEAK</span></div>
-              <div class="preview-wave" aria-hidden="true"><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i></div>
-              <span class="preview-mic" aria-hidden="true">●</span>
-            </div>
-            <div class="preview-bottom"><span id="demo-note">A focused answer. One useful improvement.</span><a href="/app">Open practice <span aria-hidden="true">↗</span></a></div>
+        <div class="landing-demo" aria-label="Example SpeakEasy practice session">
+          <div class="demo-mode-row" role="tablist" aria-label="Practice format">
+            <button type="button" class="demo-mode active" role="tab" aria-selected="true" data-demo-mode="structured">Structured practice</button>
+            <button type="button" class="demo-mode" role="tab" aria-selected="false" data-demo-mode="spontaneous">Hot take</button>
           </div>
-          <div class="preview-result">
-            <div class="preview-result-score"><strong>78</strong><span>/ 100</span></div>
-            <div class="preview-result-copy"><strong>Specific feedback, not generic praise.</strong><span>A score, the exact line to improve and a stronger opening to try.</span></div>
-            <span class="preview-result-mark" aria-hidden="true">✓</span>
+          <div class="demo-prompt" role="tabpanel">
+            <h2 id="demo-prompt-text">Tell me about a time you had to solve a difficult problem.</h2>
+            <p id="demo-guidance" class="demo-guidance">Describe the situation, the action you took and the result.</p>
+          </div>
+          <div class="demo-bottom-row">
+            <div class="demo-timer"><strong id="demo-time">01:00</strong><span>to speak</span></div>
+            <div class="demo-wave" aria-hidden="true"><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i></div>
+            <span class="demo-mic" aria-hidden="true">●</span>
+          </div>
+          <div class="demo-result">
+            <span class="demo-score"><strong>60</strong><small>/ 100</small></span>
+            <span class="demo-result-copy"><strong>One thing to improve</strong><small>A specific line to fix and a stronger opening.</small></span>
           </div>
         </div>
       </section>
 
-      <section id="how-it-works" class="landing-how" aria-labelledby="how-heading">
-        <div class="landing-section-heading">
-          <h2 id="how-heading">A simple loop. A stronger next attempt.</h2>
-          <p>Every practice session gives you a clear prompt, a timed response and something specific to improve.</p>
-        </div>
-        <div class="steps-row">
-          <article class="step-item"><span>01</span><h3>Choose what to practise</h3><p>Start with a goal or take on an unexpected point of view.</p></article>
-          <article class="step-item"><span>02</span><h3>Say it out loud</h3><p>Speak against the clock. Your words are transcribed as you go.</p></article>
-          <article class="step-item"><span>03</span><h3>Improve one thing</h3><p>Review your score, transcript and the line that will make the biggest difference.</p></article>
-        </div>
-      </section>
-
-      <section id="practice" class="landing-practice" aria-labelledby="practice-heading">
-        <div class="landing-section-heading landing-section-heading-wide">
-          <h2 id="practice-heading">One place to prepare and respond.</h2>
-          <p>Use the same practice loop for a thoughtful answer or an unscripted challenge. Switch formats whenever you need.</p>
-        </div>
-
-        <article class="feature-row">
-          <div class="feature-copy">
-            <h3>Prepare for the questions that matter.</h3>
-            <p>Build confidence before an interview, presentation or everyday conversation. Generate a tailored set of questions and work through them one answer at a time.</p>
-            <ul><li>Interview, presentation and everyday speaking goals</li><li>Optional job-description context for interview practice</li><li>Fourteen questions, with the first three available immediately</li></ul>
-            <a href="/app" class="feature-link">Practise a prepared answer <span aria-hidden="true">→</span></a>
-          </div>
-          <div class="feature-visual feature-questions" aria-hidden="true">
-            <div class="feature-visual-top"><span>Question set</span><span>14 questions</span></div>
-            <div class="feature-question selected"><span>01</span><strong>Tell me about a difficult decision you made.</strong><i>Ready</i></div>
-            <div class="feature-question"><span>02</span><strong>What is a result you are proud of?</strong><i>Ready</i></div>
-            <div class="feature-question locked"><span>03</span><strong>How do you respond to changing priorities?</strong><i>Next</i></div>
-          </div>
-        </article>
-
-        <article class="feature-row feature-row-reverse">
-          <div class="feature-copy">
-            <h3>Think clearly when there is no script.</h3>
-            <p>Take a position on a challenging idea, support it with a real example and finish with a line people remember. Choose the intensity that pushes you.</p>
-            <ul><li>Design, technology and workplace topics</li><li>Constructive, contrarian and curveball prompts</li><li>A short preparation window before your response</li></ul>
-            <a href="/app" class="feature-link">Try spontaneous practice <span aria-hidden="true">→</span></a>
-          </div>
-          <div class="feature-visual feature-take" aria-hidden="true">
-            <div class="feature-visual-top"><span>Spontaneous prompt</span><span>Extra hot</span></div>
-            <h4>Design systems improve consistency, but do they limit product innovation?</h4>
-            <div class="feature-stance"><span>Choose a side</span><span>5 second prep</span></div>
-            <div class="feature-timer"><strong>01:30</strong><span>Make your case</span></div>
-          </div>
-        </article>
-
-        <article class="feature-row">
-          <div class="feature-copy">
-            <h3>Know what to change next.</h3>
-            <p>Get a clear score across the fundamentals, a transcript with weak phrasing called out, one line to fix and a stronger opening. Retry the same prompt and see what improved.</p>
-            <ul><li>Six coaching measures, with a transparent overall score</li><li>One concrete diagnosis and an opening rewrite</li><li>A free retry to practise the improvement</li></ul>
-          </div>
-          <div class="feature-visual feature-feedback" aria-hidden="true">
-            <div class="feedback-score"><strong>78</strong><span>Overall score</span></div>
-            <div class="feedback-bars"><div><span>Content</span><i><b style="width:82%"></b></i><strong>82</strong></div><div><span>Structure</span><i><b style="width:74%"></b></i><strong>74</strong></div><div><span>Confidence</span><i><b style="width:79%"></b></i><strong>79</strong></div></div>
-            <div class="feedback-fix"><span>LINE TO FIX</span><strong>“I kind of helped with the launch.”</strong><p>Be specific about what you owned and what changed.</p></div>
-          </div>
-        </article>
-      </section>
-
-      <section class="landing-final-cta" aria-labelledby="final-cta-heading">
-        <div><h2 id="final-cta-heading">Make your next answer stronger.</h2><p>Start with one prompt. Finish with one thing you can improve.</p></div>
-        <a class="button button-primary landing-primary-cta" href="/app">Start practising <span aria-hidden="true">→</span></a>
+      <section class="landing-loop" aria-label="How SpeakEasy practice works">
+        <div><span>01</span><strong>Choose a prompt</strong></div>
+        <i aria-hidden="true"></i>
+        <div><span>02</span><strong>Speak under the timer</strong></div>
+        <i aria-hidden="true"></i>
+        <div><span>03</span><strong>Fix one thing and retry</strong></div>
       </section>
     </main>
   </div>

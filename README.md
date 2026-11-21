@@ -20,9 +20,11 @@ History and the daily practice allowance belong to the user's current browser pr
 
 ## Interface design
 
-The root route (`/`) is a conversion-focused product landing page: it explains the speaking-practice outcome, demonstrates the product in one interactive preview, explains the practice loop, describes the main capabilities, and repeats one primary call to action. It does not use fabricated testimonials or a separate product identity for either practice format.
+The landing page uses only the product information in the PRD: 60-second structured practice, 90-second spontaneous takes, specific coaching feedback, and the three-step practice loop. It contains one headline, one concise explanation, one interactive product preview, one primary call to action, and the three-step loop. It does not add testimonials, pricing, FAQs, extra feature sections, repeated CTAs, or invented marketing claims.
 
-The application is served at `/app`. It is one product with one Practice workspace and two selectable practice formats. A single accessible selector switches between Structured practice (interviews, presentations and everyday speaking) and Hot Take (spontaneous thinking and defending a position). Only the selected format is displayed; neither format has a separate product card, separate navigation destination, or separate visual identity. The interface uses one consistent visual system, no eyebrow labels, no footer, no standalone S brand tile, and a prominent Settings button. Settings provide working Light/Dark and Small/Medium/Large text-size controls; preferences apply to both the landing page and application and are retained in local browser storage.
+The application is a speaking-practice tool rather than a chat interface. Practice setup is presented beside its question or prompt output in an open two-column working layout. Controls use simple rows, dividers, a restrained rust accent, and generous working space instead of stacked AI-style cards, chat bubbles, gradients, or oversized pill controls. Structured practice and Hot Take remain two formats within the same product and use the same layout and visual language.
+
+The interface uses Inter, supports Light/Dark themes and Small/Medium/Large text sizes, and retains visible focus on interactive controls without outlining content sections. Settings describe user-facing appearance and privacy only; they do not expose implementation or provider names.
 
 ## Features
 

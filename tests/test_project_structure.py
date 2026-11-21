@@ -170,29 +170,30 @@ def test_main_interface_has_no_eyebrows_footers_or_brand_mark():
     assert ".footer" not in css
 
 
-def test_landing_page_uses_conversion_structure_and_shows_one_product(client):
+def test_landing_page_is_concise_and_uses_only_prd_content(client):
     landing = (ROOT / "templates" / "landing.html").read_text()
-    assert "Speak clearly." in landing
+    assert "Practise speaking." in landing
     assert "Make your point." in landing
-    assert 'class="product-preview"' in landing
-    assert 'role="tablist" aria-label="Practice example"' in landing
+    assert "60-second answers" in landing
+    assert "90-second position" in landing
+    assert "Get a score, one line to fix and a stronger opening" in landing
+    assert 'class="landing-demo"' in landing
+    assert 'role="tablist" aria-label="Practice format"' in landing
     assert 'data-demo-mode="structured"' in landing
     assert 'data-demo-mode="spontaneous"' in landing
-    assert 'id="how-it-works"' in landing
-    assert 'id="practice"' in landing
     assert 'href="/app"' in landing
     assert "Start practising" in landing
     assert "social proof" not in landing.lower()
+    assert "pricing" not in landing.lower()
+    assert "testimonial" not in landing.lower()
     assert "Hot Take Arena" not in landing
     assert "Firebase" not in landing
     assert "Gemini" not in landing
     assert "eyebrow" not in landing.lower()
     assert "<footer" not in landing.lower()
-
-    # The marketing preview is one shared interface with a switchable prompt, not two product cards.
-    assert landing.count('class="product-preview"') == 1
-    assert "product-card" not in landing
-    assert "experience-grid" not in landing
+    assert "What you can practise" not in landing
+    assert "landing-feature" not in landing
+    assert landing.count("<section") == 2
 
     application = (ROOT / "templates" / "index.html").read_text()
     assert 'id="practice-workspace"' in application
@@ -201,18 +202,67 @@ def test_landing_page_uses_conversion_structure_and_shows_one_product(client):
     assert 'data-practice-mode="hot-take"' in application
     assert 'data-practice-panel="structured"' in application
     assert 'data-practice-panel="hot-take" hidden' in application
+    assert 'structured-layout' in application
+    assert 'hot-take-layout' in application
     assert "Hot Take Arena" not in application
     assert 'data-view="arena"' not in application
+    assert 'id="question-list"' in application
+    assert 'id="hot-take-result"' in application
+    assert 'id="session-panel"' in application
+    assert 'id="scorecard-panel"' in application
+    assert 'id="settings-dialog"' in application
 
     app_js = (ROOT / "public" / "static" / "js" / "app.js").read_text()
     assert 'function setPracticeMode(mode, moveFocus = false)' in app_js
     assert 'setPracticeMode("structured")' in app_js
     assert 'setPracticeMode(tabs[next].dataset.practiceMode, true)' in app_js
+    assert '$("#hot-take-empty").hidden = true;' in app_js
     assert 'view === "arena"' not in app_js
 
     landing_js = (ROOT / "public" / "static" / "js" / "landing.js").read_text()
     assert "demoModes" in landing_js
     assert "aria-selected" in landing_js
+    assert '"#demo-prompt-text"' in landing_js
+
+
+def test_application_uses_a_speaking_tool_layout_not_chat_or_generic_ai_cards():
+    markup = (ROOT / "templates" / "index.html").read_text().lower()
+    css = (ROOT / "public" / "static" / "css" / "styles.css").read_text().lower()
+    assert "chat bubble" not in markup
+    assert "ask ai" not in markup
+    assert "chat input" not in markup
+    assert 'structured-layout' in markup
+    assert 'questions-column' in markup
+    assert 'hot-take-layout' in markup
+    assert "--accent: #b34e34" in css
+    assert "#7657d6" not in css and "#ae9af4" not in css
+    assert "linear-gradient(" not in css
+    assert ".structured-layout, .hot-take-layout { display: grid;" in css
+    assert ".practice-workspace { width: 100%; margin: 0 0 65px; }" in css
+    assert ".session-panel, .scorecard-panel" in css
+
+
+
+def test_visual_direction_is_direct_not_chatgpt_or_card_based():
+    css = (ROOT / "public" / "static" / "css" / "styles.css").read_text().lower()
+    app = (ROOT / "templates" / "index.html").read_text().lower()
+    landing = (ROOT / "templates" / "landing.html").read_text().lower()
+
+    assert "--accent: #b34e34" in css
+    assert "#7657d6" not in css and "#ae9af4" not in css
+    assert "linear-gradient(" not in css
+    assert "chat bubble" not in app and "ask ai" not in app and "chat input" not in app
+    workspace_rule = css.split(".practice-workspace {", 1)[1].split("}", 1)[0]
+    panel_rule = css.split(".practice-mode-panel {", 1)[1].split("}", 1)[0]
+    assert "box-shadow" not in workspace_rule and "box-shadow: none" in panel_rule
+    assert ".practice-workspace { width: 100%; margin: 0 0 65px; }" in css
+    assert ".structured-layout, .hot-take-layout { display: grid;" in css
+    assert ".practice-mode-panel { min-width: 0; padding: 38px 0 30px; outline: none; box-shadow: none; }" in css
+    assert "border-radius: 999px" not in css
+    assert "landing-final-cta" not in landing
+    assert "landing-practice" not in landing
+    assert landing.count("start practising") == 1
+    assert "60-second answers" in landing and "90-second position" in landing
 
 
 def test_settings_has_theme_and_font_size_controls_without_implementation_terms():
@@ -235,8 +285,8 @@ def test_settings_has_theme_and_font_size_controls_without_implementation_terms(
 
 def test_section_focus_outline_is_removed_but_control_focus_is_retained():
     css = (ROOT / "public" / "static" / "css" / "styles.css").read_text()
-    assert ':where(section, main, article, [role="tabpanel"], .view):focus-visible { outline: none; box-shadow: none; }' in css
-    assert ':where(a, button, input, textarea, select, summary, [tabindex]):focus-visible' in css
+    assert ':where(a, button, input, textarea, select, summary):focus-visible { outline: 2px solid var(--focus-ring); outline-offset: 3px; }' in css
+    assert ':where(main, section, article, [role="tabpanel"], .view):focus-visible { outline: none; box-shadow: none; }' in css
 
 
 def test_removed_landing_copy_and_ai_setup_banner():
@@ -271,3 +321,13 @@ def test_browser_never_displays_raw_indexeddb_connection_closing_error():
     source = (ROOT / "public" / "static" / "js" / "app.js").read_text()
     assert "function friendlyMessage(message)" in source
     assert "Local history was interrupted. Your response is still on screen; please try again." in source
+
+
+def test_error_pages_follow_the_same_brand_and_no_conversation_copy():
+    for page in ("404.html", "500.html"):
+        markup = (ROOT / "templates" / page).read_text()
+        assert "family=Inter" in markup
+        assert 'class="brand" href="/" aria-label="SpeakEasy home">SpeakEasy</a>' in markup
+        assert "brand-period" not in markup
+        assert "conversation" not in markup.lower()
+        assert "error-page-footnote" not in markup

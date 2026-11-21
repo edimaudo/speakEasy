@@ -37,10 +37,10 @@ TRANSCRIPT = "I think we should simplify the process because it reduces handoffs
 def test_root_renders_marketing_landing_page_with_a_single_product_value_proposition(client):
     response = client.get("/")
     assert response.status_code == 200
-    assert "Speak clearly." in response.text
+    assert "Practise speaking." in response.text
     assert "Make your point." in response.text
     assert "Start practising" in response.text
-    assert "A simple loop. A stronger next attempt." in response.text
+    assert "Fix one thing and retry" in response.text
     assert 'href="/app"' in response.text
     assert "Firebase" not in response.text
     assert "Gemini" not in response.text
@@ -117,7 +117,7 @@ def test_unknown_browser_route_renders_branded_404_with_real_status(client):
     response = client.get("/this-page-does-not-exist")
     assert response.status_code == 404
     assert "Page not found" in response.text
-    assert "That page isn't part of the conversation." in response.text
+    assert "This page could not be found." in response.text
     assert 'href="/"' in response.text
     assert 'href="/static/css/styles.css"' in response.text
 

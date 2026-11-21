@@ -3,14 +3,14 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <meta name="theme-color" content="#f2f0e9">
-  <meta name="description" content="SpeakEasy helps you practise clear answers and defend strong ideas.">
-  <title>SpeakEasy — Practice your speaking</title>
+  <meta name="theme-color" content="#f6f5f1">
+  <meta name="description" content="Practise speaking with SpeakEasy.">
+  <title>SpeakEasy — Practice</title>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;650;700;750;800&display=swap" rel="stylesheet">
   <script>
-    (function () {
+    (() => {
       try {
         const prefs = JSON.parse(localStorage.getItem("speakeasy.preferences.v1") || "{}");
         document.documentElement.dataset.theme = prefs.theme === "dark" ? "dark" : "light";
@@ -22,15 +22,13 @@
     })();
   </script>
   <link rel="stylesheet" href="/static/css/styles.css">
-  <script>
-    window.SPEAKEASY_CONFIG = {{ config|tojson }};
-  </script>
+  <script>window.SPEAKEASY_CONFIG = {{ config|tojson }};</script>
   <script type="module" src="/static/js/app.js"></script>
 </head>
-<body>
+<body class="application-body">
   <div class="app-shell">
     <header class="topbar">
-      <a class="brand" href="/" aria-label="SpeakEasy home">SpeakEasy<span class="brand-period">.</span></a>
+      <a class="brand" href="/" aria-label="SpeakEasy home">SpeakEasy</a>
       <nav class="main-nav" aria-label="Main navigation">
         <button class="nav-link active" data-view="practice" aria-current="page">Practice</button>
         <button class="nav-link" data-view="history">History</button>
@@ -41,82 +39,68 @@
       </div>
     </header>
 
-    <main>
+    <main class="application-main">
       <section id="view-practice" class="view active" aria-label="SpeakEasy practice">
         <header class="app-intro">
-          <div class="intro-copy-block">
-            <h1>Practise your<br><em>speaking.</em></h1>
-            <p class="intro-copy">Prepare a clear answer or respond to an idea on the spot. Speak out loud, review specific feedback and strengthen your next attempt.</p>
+          <div>
+            <h1>Practice</h1>
+            <p>Choose a format. Make your response stronger.</p>
           </div>
         </header>
 
         <section id="practice-workspace" class="practice-workspace" aria-labelledby="workspace-heading">
-          <div class="workspace-heading">
-            <div>
-              <h2 id="workspace-heading">Choose how to practise</h2>
-              <p>One practice space for considered answers and spontaneous thinking.</p>
-            </div>
-          </div>
-
+          <h2 id="workspace-heading" class="visually-hidden">Practice format</h2>
           <div class="practice-switcher" role="tablist" aria-label="Practice format">
             <button id="tab-structured" class="practice-tab selected" type="button" role="tab" aria-selected="true" aria-controls="structured-practice" data-practice-mode="structured">
-              <span>Prepare an answer</span>
-              <small>Interviews · Presentations · Everyday speaking</small>
+              <span>Structured practice</span>
+              <small>Interview · Presentation · Everyday</small>
             </button>
             <button id="tab-hot-take" class="practice-tab" type="button" role="tab" aria-selected="false" aria-controls="hot-take-practice" data-practice-mode="hot-take" tabindex="-1">
-              <span>Think on your feet</span>
-              <small>Take a position · Make your case</small>
+              <span>Hot take</span>
+              <small>Choose a side · Make your case</small>
             </button>
           </div>
 
-          <section id="structured-practice" class="practice-mode-panel" role="tabpanel" aria-labelledby="tab-structured" data-practice-panel="structured">
-            <div class="panel-heading">
-              <h3>Prepare an answer</h3>
-              <p>Prepare for an interview, shape a presentation or practise everyday conversations.</p>
-            </div>
-
-            <div class="goal-grid" role="group" aria-label="Practice goal">
-              <button class="goal-card selected" data-goal="Interview" aria-pressed="true">
-                <span class="goal-number">01</span><span class="goal-title">Job interviews</span>
-                <span class="goal-description">Use specific examples.</span>
-              </button>
-              <button class="goal-card" data-goal="Presentation" aria-pressed="false">
-                <span class="goal-number">02</span><span class="goal-title">Presentations</span>
-                <span class="goal-description">Lead with one message.</span>
-              </button>
-              <button class="goal-card" data-goal="Everyday speaking" aria-pressed="false">
-                <span class="goal-number">03</span><span class="goal-title">Everyday speaking</span>
-                <span class="goal-description">Explain without wandering.</span>
-              </button>
-            </div>
-
-            <div id="job-description-wrap" class="field-wrap">
-              <label for="job-description">Job description <span class="optional-label">Optional</span></label>
-              <textarea id="job-description" rows="3" maxlength="9000" placeholder="Paste a job description to tailor your interview questions."></textarea>
-              <p class="field-help">Use it to tailor questions. Leave out confidential information.</p>
-            </div>
-
-            <div class="question-toolbar">
-              <div>
-                <h3>Your question set</h3>
-                <p id="question-set-help">14 questions · Your first three unlock immediately.</p>
+          <section id="structured-practice" class="practice-mode-panel structured-layout" role="tabpanel" aria-labelledby="tab-structured" data-practice-panel="structured">
+            <div class="setup-column">
+              <div class="panel-heading">
+                <h2>Prepare an answer</h2>
+                <p>Choose what you want to practise.</p>
               </div>
-              <button id="generate-questions" class="button button-hot">Generate questions <span aria-hidden="true">↗</span></button>
+
+              <div class="goal-grid" role="group" aria-label="Practice goal">
+                <button class="goal-card selected" data-goal="Interview" aria-pressed="true"><span class="goal-title">Job interview</span></button>
+                <button class="goal-card" data-goal="Presentation" aria-pressed="false"><span class="goal-title">Presentation</span></button>
+                <button class="goal-card" data-goal="Everyday speaking" aria-pressed="false"><span class="goal-title">Everyday speaking</span></button>
+              </div>
+
+              <div id="job-description-wrap" class="field-wrap">
+                <label for="job-description">Job description <span class="optional-label">Optional</span></label>
+                <textarea id="job-description" rows="4" maxlength="9000" placeholder="Paste a job description to tailor your interview questions."></textarea>
+              </div>
+
+              <button id="generate-questions" class="button button-primary">Generate questions <span aria-hidden="true">→</span></button>
             </div>
-            <div id="question-list" class="question-list" aria-live="polite">
-              <div class="empty-state compact-empty"><p>Generate a question set to begin.</p></div>
+
+            <div class="questions-column">
+              <div class="question-toolbar">
+                <div><h3>Your questions</h3><p id="question-set-help">14 questions · First 3 available to start.</p></div>
+              </div>
+              <div id="question-list" class="question-list" aria-live="polite">
+                <div class="empty-state"><p>Your question set will appear here.</p></div>
+              </div>
             </div>
           </section>
 
-          <section id="hot-take-practice" class="practice-mode-panel" role="tabpanel" aria-labelledby="tab-hot-take" data-practice-panel="hot-take" hidden>
-            <div class="panel-heading">
-              <h3>Respond in the moment</h3>
-              <p>Respond to a challenging idea, choose a side and make your case without hedging.</p>
-            </div>
+          <section id="hot-take-practice" class="practice-mode-panel hot-take-layout" role="tabpanel" aria-labelledby="tab-hot-take" data-practice-panel="hot-take" hidden>
+            <div class="setup-column">
+              <div class="panel-heading">
+                <h2>Think on your feet</h2>
+                <p>Choose a topic and how challenging the prompt should be.</p>
+              </div>
 
-            <div class="prompt-controls">
               <div class="field-wrap">
-                <label for="hot-category">Choose a domain</label>
+                <label for="hot-category">Topic</label>
                 <select id="hot-category">
                   <option>UX &amp; Product Design</option>
                   <option>Tech &amp; AI</option>
@@ -126,39 +110,36 @@
               </div>
               <div id="custom-topic-wrap" class="field-wrap" hidden>
                 <label for="custom-topic">Your topic</label>
-                <input id="custom-topic" maxlength="250" placeholder="e.g. product-led growth">
+                <input id="custom-topic" maxlength="250" placeholder="Enter a topic">
               </div>
               <fieldset class="heat-fieldset">
-                <legend>Choose the intensity</legend>
+                <legend>Intensity</legend>
                 <div class="heat-options">
-                  <label class="heat-option mild selected"><input type="radio" name="heat" value="Mild" checked><span>Mild</span><small>Constructive debate</small></label>
-                  <label class="heat-option spicy"><input type="radio" name="heat" value="Spicy"><span>Spicy</span><small>Contrarian position</small></label>
-                  <label class="heat-option extra"><input type="radio" name="heat" value="Extra hot"><span>Extra hot</span><small>Curveball constraint</small></label>
+                  <label class="heat-option selected"><input type="radio" name="heat" value="Mild" checked><span>Mild</span><small>Constructive</small></label>
+                  <label class="heat-option"><input type="radio" name="heat" value="Spicy"><span>Spicy</span><small>Contrarian</small></label>
+                  <label class="heat-option"><input type="radio" name="heat" value="Extra hot"><span>Extra hot</span><small>Curveball</small></label>
                 </div>
               </fieldset>
-              <button id="generate-hot-take" class="button button-hot">Generate a prompt <span aria-hidden="true">↗</span></button>
+              <button id="generate-hot-take" class="button button-primary">Generate prompt <span aria-hidden="true">→</span></button>
             </div>
 
-            <div class="prompt-guidance">
-              <span class="guidance-rule"></span>
-              <p>State your position. Support it with one real example. Finish with a line people remember.</p>
-            </div>
-
-            <div id="hot-take-result" class="hot-take-result" hidden>
-              <div class="prompt-meta"><span id="hot-meta-category"></span><span id="hot-meta-heat"></span></div>
-              <p id="hot-take-statement" class="hot-take-statement"></p>
-              <p id="hot-take-constraint" class="constraint-text" hidden></p>
-              <div class="hot-take-actions"><button id="start-hot-take" class="button button-hot">Start 90-second take <span aria-hidden="true">→</span></button><span class="prompt-source" id="hot-prompt-source"></span></div>
+            <div class="prompt-column">
+              <div class="prompt-column-heading"><h3>Your prompt</h3></div>
+              <div class="prompt-guidance" id="hot-take-empty"><p>Choose a topic and intensity. Your prompt will appear here.</p></div>
+              <div id="hot-take-result" class="hot-take-result" hidden>
+                <div class="prompt-meta"><span id="hot-meta-category"></span><span id="hot-meta-heat"></span></div>
+                <p id="hot-take-statement" class="hot-take-statement"></p>
+                <p id="hot-take-constraint" class="constraint-text" hidden></p>
+                <div class="hot-take-actions"><button id="start-hot-take" class="button button-primary">Start 90-second take <span aria-hidden="true">→</span></button><span class="prompt-source" id="hot-prompt-source"></span></div>
+                <p class="prompt-guidance-text">Choose a position, give one real example and finish with a memorable point.</p>
+              </div>
             </div>
           </section>
         </section>
       </section>
 
       <section id="view-history" class="view history-view" aria-labelledby="history-heading" hidden>
-        <div class="history-heading">
-          <div><h1 id="history-heading">Your practice history</h1><p>Review your sessions and see how your delivery develops.</p></div>
-          <span class="duration-label">Sessions expire after 30 days</span>
-        </div>
+        <div class="history-heading"><div><h1 id="history-heading">History</h1><p>Your practice sessions from the last 30 days.</p></div></div>
         <div id="history-list" class="history-list"><div class="empty-state">Your completed sessions will appear here.</div></div>
       </section>
 
@@ -172,66 +153,40 @@
           <div class="filler-total"><strong id="filler-total">0</strong><span>fillers</span></div>
         </div>
         <div class="live-status-row"><span id="recording-status" class="recording-status" aria-live="polite" aria-atomic="true">Ready when you are.</span><span id="word-count">0 words</span></div>
-        <div class="transcript-live-wrap"><label for="live-transcript">Live transcript <span>Local speech recognition only</span></label><textarea id="live-transcript" rows="5" maxlength="12000" placeholder="Your words will appear here. You can also type your response."></textarea></div>
-        <div class="filler-breakdown" id="filler-breakdown"><span>um <b data-filler="um">0</b></span><span>uh <b data-filler="uh">0</b></span><span>like <b data-filler="like">0</b></span><span>kind of <b data-filler="kind of">0</b></span><span>basically <b data-filler="basically">0</b></span><span>you know <b data-filler="you know">0</b></span></div>
-        <div class="session-actions"><button id="start-recording" class="button button-hot">Start speaking <span aria-hidden="true">●</span></button><button id="stop-recording" class="button button-secondary" disabled>Finish response</button><button id="analyse-response" class="button button-hot" hidden>Analyse response</button></div>
-        <p class="privacy-note">Audio stays in your browser and is never uploaded. Only your transcript is sent for coaching.</p>
+        <div class="transcript-live-wrap"><label for="live-transcript">Your response <span>Live transcript</span></label><textarea id="live-transcript" rows="5" maxlength="12000" placeholder="Start speaking or type your response here."></textarea></div>
+        <div class="filler-breakdown" id="filler-breakdown"><span>um <b data-filler="um">0</b></span><span>uh <b data-filler="uh">0</b></span><span>like <b data-filler="like">0</b></span><span>kind of <b data-filler="kind of">0</b></span><span>basically <b data-filler="basically">0</b></span><span>you know <b data-filler="you know">0</b></div>
+        <div class="session-actions"><button id="start-recording" class="button button-primary">Start speaking</button><button id="stop-recording" class="button button-secondary" disabled>Finish response</button><button id="analyse-response" class="button button-primary" hidden>Analyse response</button></div>
+        <p class="privacy-note">Audio stays in your browser. Your transcript is used to generate feedback.</p>
       </section>
 
       <section id="scorecard-panel" class="scorecard-panel" hidden aria-labelledby="scorecard-heading">
-        <div class="scorecard-header"><div><h2 id="scorecard-heading">One thing to improve.</h2></div><div class="score-total"><strong id="overall-score">—</strong><span>/ 100</span></div></div>
-        <div class="scorecard-grid">
-          <div class="score-metrics" id="score-metrics"></div>
-          <div class="coaching-panel">
-            <div class="coaching-block flagged-block"><h3 class="coaching-title">Line to fix</h3><blockquote id="line-to-fix"></blockquote><p id="line-diagnosis"></p></div>
-            <div class="coaching-block"><h3 class="coaching-title">A stronger opening</h3><p id="opening-rewrite" class="rewrite-text"></p></div>
-            <div id="stance-block" class="coaching-block" hidden><h3 class="coaching-title">Stance clarity</h3><p id="stance-verdict"></p><p id="punchier-hook" class="rewrite-text"></p></div>
-            <div class="coaching-block"><h3 class="coaching-title">Next focus</h3><p id="next-focus"></p></div>
-          </div>
-        </div>
-        <div class="transcript-review"><h3>Transcript review</h3><div id="annotated-transcript" class="annotated-transcript"></div></div>
-        <div class="scorecard-footer"><span id="score-source" class="prompt-source"></span><div><span id="score-delta" class="score-delta"></span><button id="retry-session" class="button button-hot">Try again · Free retry</button><button id="finish-session" class="button button-secondary">Done</button></div></div>
+        <div class="scorecard-header"><div><h2 id="scorecard-heading">Your feedback</h2></div><div class="score-total"><strong id="overall-score">—</strong><span>/ 100</span></div></div>
+        <div class="scorecard-grid"><div class="score-metrics" id="score-metrics"></div><div class="coaching-panel">
+          <div class="coaching-block flagged-block"><h3 class="coaching-title">Line to fix</h3><blockquote id="line-to-fix"></blockquote><p id="line-diagnosis"></p></div>
+          <div class="coaching-block"><h3 class="coaching-title">A stronger opening</h3><p id="opening-rewrite" class="rewrite-text"></p></div>
+          <div id="stance-block" class="coaching-block" hidden><h3 class="coaching-title">Stance clarity</h3><p id="stance-verdict"></p><p id="punchier-hook" class="rewrite-text"></p></div>
+          <div class="coaching-block"><h3 class="coaching-title">Next focus</h3><p id="next-focus"></p></div>
+        </div></div>
+        <div class="transcript-review"><h3>Transcript</h3><div id="annotated-transcript" class="annotated-transcript"></div></div>
+        <div class="scorecard-footer"><span id="score-source" class="prompt-source"></span><div><span id="score-delta" class="score-delta"></span><button id="retry-session" class="button button-primary">Try again · Free retry</button><button id="finish-session" class="button button-secondary">Done</button></div></div>
       </section>
     </main>
   </div>
 
   <dialog id="settings-dialog" class="settings-dialog" aria-labelledby="settings-heading">
-    <div class="settings-header">
-      <div>
-        <h2 id="settings-heading">Settings</h2>
-        <p>Adjust how SpeakEasy looks and review your privacy choices.</p>
-      </div>
-      <form method="dialog"><button class="icon-button" aria-label="Close settings">×</button></form>
-    </div>
-
+    <div class="settings-header"><div><h2 id="settings-heading">Settings</h2><p>Appearance and privacy.</p></div><form method="dialog"><button class="icon-button" aria-label="Close settings">×</button></form></div>
     <section class="settings-section" aria-labelledby="appearance-heading">
       <h3 id="appearance-heading">Appearance</h3>
-      <div class="setting-row">
-        <div class="setting-copy"><strong>Colour theme</strong><span>Choose a light or dark appearance.</span></div>
-        <div class="setting-options" role="group" aria-label="Colour theme">
-          <button type="button" data-theme-choice="light" aria-pressed="true">Light</button>
-          <button type="button" data-theme-choice="dark" aria-pressed="false">Dark</button>
-        </div>
-      </div>
-      <div class="setting-row">
-        <div class="setting-copy"><strong>Text size</strong><span>Adjust the size of text across the app.</span></div>
-        <div class="setting-options text-size-options" role="group" aria-label="Text size">
-          <button type="button" data-font-size-choice="small" aria-pressed="false">Small</button>
-          <button type="button" data-font-size-choice="medium" aria-pressed="true">Medium</button>
-          <button type="button" data-font-size-choice="large" aria-pressed="false">Large</button>
-        </div>
-      </div>
+      <div class="setting-row"><div class="setting-copy"><strong>Colour theme</strong><span>Choose a light or dark appearance.</span></div><div class="setting-options" role="group" aria-label="Colour theme"><button type="button" data-theme-choice="light" aria-pressed="true">Light</button><button type="button" data-theme-choice="dark" aria-pressed="false">Dark</button></div></div>
+      <div class="setting-row"><div class="setting-copy"><strong>Text size</strong><span>Adjust the size of text across the app.</span></div><div class="setting-options text-size-options" role="group" aria-label="Text size"><button type="button" data-font-size-choice="small" aria-pressed="false">Small</button><button type="button" data-font-size-choice="medium" aria-pressed="true">Medium</button><button type="button" data-font-size-choice="large" aria-pressed="false">Large</button></div></div>
     </section>
-
-    <section class="settings-section" aria-labelledby="privacy-heading">
-      <h3 id="privacy-heading">Privacy</h3>
+    <section class="settings-section" aria-labelledby="privacy-heading"><h3 id="privacy-heading">Privacy</h3>
       <div class="privacy-detail"><strong>Microphone</strong><p>Your microphone audio is processed while you practise. Audio recordings are not saved.</p></div>
       <div class="privacy-detail"><strong>Feedback</strong><p>Your transcript is sent to our coaching service to create your score and suggestions.</p></div>
       <div class="privacy-detail"><strong>Practice history</strong><p>Your transcripts and scorecards stay in this browser for up to 30 days. They are not synced between devices. Clearing browser data removes them.</p></div>
     </section>
     <form method="dialog"><button class="button button-primary button-wide">Done</button></form>
   </dialog>
-
   <div id="toast" class="toast" role="status" aria-live="polite"></div>
 </body>
 </html>
