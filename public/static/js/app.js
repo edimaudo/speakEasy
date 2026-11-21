@@ -49,9 +49,20 @@ function escapeHtml(value) {
   })[char]);
 }
 
+function friendlyMessage(message) {
+  const text = String(message ?? "Something went wrong.");
+  if (/database connection is closing|InvalidStateError|transaction.*inactive|database.*closed/i.test(text)) {
+    return "Local history was interrupted. Your response is still on screen; please try again.";
+  }
+  if (/QuotaExceededError|storage quota/i.test(text)) {
+    return "This browser is low on storage. Remove some site data or download anything you need before continuing.";
+  }
+  return text;
+}
+
 function toast(message, type = "info") {
   const element = $("#toast");
-  element.textContent = message;
+  element.textContent = friendlyMessage(message);
   element.className = `toast show ${type}`;
   clearTimeout(toast.timer);
   toast.timer = setTimeout(() => element.classList.remove("show"), 4200);
@@ -71,6 +82,7 @@ function setBusy(button, busy, label = "Working…") {
 
 function setAIStatus(text, type = "ready") {
   const pill = $("#ai-status");
+  pill.hidden = false;
   pill.className = `status-pill status-${type}`;
   pill.querySelector("span:last-child").textContent = text;
 }
@@ -111,19 +123,26 @@ async function switchView(view) {
     if (active) button.setAttribute("aria-current", "page");
     else button.removeAttribute("aria-current");
   });
-  ["practice", "arena", "history"].forEach((name) => {
-    const element = $(`#view-${name}`);
-    const active = name === view;
-    element.hidden = !active;
-    element.classList.toggle("active", active);
-  });
-  if (view === "history") loadHistory();
+
+  const historyActive = view === "history";
+  $("#view-practice").hidden = historyActive;
+  $("#view-practice").classList.toggle("active", !historyActive);
+  $("#view-history").hidden = !historyActive;
+  $("#view-history").classList.toggle("active", historyActive);
+
+  if (historyActive) {
+    await loadHistory();
+  } else if (view === "arena") {
+    requestAnimationFrame(() => $("#hot-takes").scrollIntoView({ behavior: "smooth", block: "start" }));
+  } else {
+    window.scrollTo({ top: 0, behavior: "smooth" });
+  }
 }
 
 function renderQuestions() {
   const list = $("#question-list");
   if (!state.questions.length) {
-    list.innerHTML = '<div class="empty-state compact-empty"><span class="empty-line"></span><span class="empty-line short"></span><span class="empty-line"></span><p>Generate your question set to begin.</p></div>';
+    list.innerHTML = '<div class="empty-state compact-empty"><p>Generate a question set to begin.</p></div>';
     return;
   }
   list.innerHTML = state.questions.map((question, index) => {
@@ -693,7 +712,7 @@ async function loadHistory() {
       return `<article class="history-item"><div class="history-main"><div><span class="history-type">${session.mode === "hot-take" ? "HOT TAKE" : "STRUCTURED PRACTICE"}</span><h3>${escapeHtml(title)}</h3><p>${escapeHtml(session.prompt)}</p><span class="history-date">${new Date(session.createdAt).toLocaleString()}</span></div><div class="history-score"><strong>${Number(latest?.overallScore ?? 0).toFixed(1).replace(/\.0$/, "")}</strong><span>/100</span><small>${session.attempts.length} ${session.attempts.length === 1 ? "attempt" : "attempts"}</small></div></div><div class="history-actions"><button class="text-button" data-history-open="${session.id}">View feedback</button><button class="text-button destructive" data-history-delete="${session.id}">Delete</button></div></article>`;
     }).join("");
   } catch (error) {
-    list.innerHTML = `<div class="empty-state">${escapeHtml(error.message)}</div>`;
+    list.innerHTML = `<div class="empty-state">${escapeHtml(friendlyMessage(error.message))}</div>`;
   }
 }
 
@@ -780,7 +799,8 @@ function setupEvents() {
     $("#scorecard-panel").hidden = true;
     state.session = null;
     if (state.view === "history") loadHistory();
-    else if (state.view === "practice") window.scrollTo({ top: $("#view-practice").offsetTop - 20, behavior: "smooth" });
+    else if (state.view === "arena") $("#hot-takes").scrollIntoView({ behavior: "smooth", block: "start" });
+    else window.scrollTo({ top: 0, behavior: "smooth" });
   });
   $("#close-session").addEventListener("click", async () => {
     await stopCapture(false);
@@ -795,7 +815,6 @@ function setupEvents() {
   });
   const dialog = $("#settings-dialog");
   $("#settings-toggle").addEventListener("click", () => dialog.showModal());
-  $("#privacy-open").addEventListener("click", () => dialog.showModal());
   dialog.addEventListener("click", (event) => {
     if (event.target === dialog) dialog.close();
   });
@@ -805,10 +824,7 @@ function init() {
   setupEvents();
   $("#job-description-wrap").hidden = false;
   $("#analyse-response").hidden = true;
-  if (!isAIReady()) {
-    setAIStatus("AI setup required", "error");
-    toast("Add Firebase AI Logic configuration to the Python environment to enable practice generation and coaching.", "error");
-  }
+  if (isAIReady()) setAIStatus("Firebase AI Logic ready", "ready");
   refreshUsage();
   // Listing prunes expired records during startup, so old history is removed
   // after the 30-day retention window without requiring a manual History visit.

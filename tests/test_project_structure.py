@@ -149,3 +149,63 @@ def test_vercel_has_no_cron_or_database_configuration():
     env_example = (ROOT / ".env.example").read_text().lower()
     assert "database_url" not in env_example
     assert "postgres" not in env_example
+
+
+def test_main_interface_has_no_eyebrows_footers_or_brand_mark():
+    for page in ("index.html", "404.html", "500.html"):
+        markup = (ROOT / "templates" / page).read_text().lower()
+        assert "eyebrow" not in markup
+        assert "<footer" not in markup
+        assert "brand-mark" not in markup
+    css = (ROOT / "public" / "static" / "css" / "styles.css").read_text().lower()
+    assert ".eyebrow" not in css
+    assert ".footer" not in css
+
+
+def test_landing_page_integrates_structured_practice_and_hot_takes():
+    markup = (ROOT / "templates" / "index.html").read_text()
+    assert 'id="view-practice"' in markup
+    assert 'id="structured-practice"' in markup
+    assert 'id="hot-takes"' in markup
+    assert 'id="view-arena"' not in markup
+    practice_start = markup.index('id="view-practice"')
+    history_start = markup.index('id="view-history"')
+    practice_hub = markup[practice_start:history_start]
+    assert practice_hub.index('id="structured-practice"') < practice_hub.index('id="hot-takes"')
+    app_js = (ROOT / "public" / "static" / "js" / "app.js").read_text()
+    assert 'view === "arena"' in app_js
+    assert 'scrollIntoView' in app_js
+
+
+def test_removed_landing_copy_and_ai_setup_banner():
+    markup = (ROOT / "templates" / "index.html").read_text()
+    app_js = (ROOT / "public" / "static" / "js" / "app.js").read_text()
+    firebase_ai = (ROOT / "public" / "static" / "js" / "firebase-ai.js").read_text()
+    assert "60 seconds to sharpen" not in markup.lower()
+    assert "90 seconds to take a stand" not in markup.lower()
+    assert "ai setup required" not in markup.lower()
+    assert "ai setup required" not in app_js.lower()
+    assert 'id="ai-status" class="status-pill" hidden' in markup
+    assert "Add Firebase AI Logic configuration" not in firebase_ai
+
+
+def test_settings_action_is_visibly_labelled_and_not_footer_dependent():
+    markup = (ROOT / "templates" / "index.html").read_text()
+    assert '<button id="settings-toggle" class="settings-button"' in markup
+    assert '>Settings</button>' in markup
+    assert 'id="privacy-open"' not in markup
+
+
+def test_indexeddb_connection_is_invalidated_and_reopened_when_closing():
+    source = (ROOT / "public" / "static" / "js" / "local-store.js").read_text()
+    assert "db.onversionchange" in source
+    assert "db.onclose" in source
+    assert "async function createTransaction" in source
+    assert "database connection is closing" in source
+    assert "Local history briefly disconnected" in source
+
+
+def test_browser_never_displays_raw_indexeddb_connection_closing_error():
+    source = (ROOT / "public" / "static" / "js" / "app.js").read_text()
+    assert "function friendlyMessage(message)" in source
+    assert "Local history was interrupted. Your response is still on screen; please try again." in source

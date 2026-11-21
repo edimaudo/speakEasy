@@ -3,12 +3,12 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <meta name="theme-color" content="#f6f5f1">
-  <meta name="description" content="Practice high-stakes speaking and spontaneous thinking in SpeakEasy.">
-  <title>SpeakEasy — Make your point. Make it land.</title>
+  <meta name="theme-color" content="#f2f0e9">
+  <meta name="description" content="SpeakEasy helps you practise clear answers and defend strong ideas.">
+  <title>SpeakEasy — Practice how you speak</title>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700;800&family=Manrope:wght@400;500;600;700;800&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="/static/css/styles.css">
   <script>
     window.SPEAKEASY_CONFIG = {{ config|tojson }};
@@ -18,133 +18,127 @@
 <body>
   <div class="app-shell">
     <header class="topbar">
-      <a class="brand" href="/" aria-label="SpeakEasy home">
-        <span class="brand-mark" aria-hidden="true">S</span>
-        <span>SpeakEasy</span>
-      </a>
+      <a class="brand" href="/" aria-label="SpeakEasy home">SpeakEasy<span class="brand-period">.</span></a>
       <nav class="main-nav" aria-label="Main navigation">
         <button class="nav-link active" data-view="practice" aria-current="page">Practice</button>
         <button class="nav-link" data-view="arena">Hot Take Arena</button>
         <button class="nav-link" data-view="history">History</button>
       </nav>
       <div class="topbar-right">
-        <span id="ai-status" class="status-pill status-offline"><span class="status-dot"></span><span>AI not configured</span></span>
-        <button id="settings-toggle" class="icon-button" aria-label="Open privacy and settings" title="Privacy and settings">⚙</button>
+        <span id="ai-status" class="status-pill" hidden><span class="status-dot"></span><span></span></span>
+        <button id="settings-toggle" class="settings-button" aria-label="Open settings and privacy" title="Settings">Settings</button>
       </div>
     </header>
 
     <main>
-      <section class="intro-row">
-        <div>
-          <p class="eyebrow">A better way to think out loud</p>
-          <h1>Make your point.<br><em>Make it land.</em></h1>
-          <p class="intro-copy">Build clarity, confidence and presence in short, focused speaking drills.</p>
-        </div>
-        <div class="intro-note">
-          <span class="note-icon" aria-hidden="true">◷</span>
-          <div><strong>60 seconds to sharpen.</strong><br><span>90 seconds to take a stand.</span></div>
-        </div>
-      </section>
-
-      <section id="view-practice" class="view active" aria-labelledby="practice-heading">
-        <div class="section-heading">
-          <div>
-            <p class="eyebrow">Structured practice</p>
-            <h2 id="practice-heading">Choose what to work on</h2>
+      <section id="view-practice" class="view active" aria-label="Speaking practice">
+        <section class="intro-row">
+          <div class="intro-copy-block">
+            <h1>Make your point.<br><em>Make it land.</em></h1>
+            <p class="intro-copy">Build a stronger answer or put an opinion under pressure. Choose a practice path and get straight into it.</p>
           </div>
-          <span class="duration-label">60-second drills</span>
-        </div>
-
-        <div class="goal-grid" role="group" aria-label="Practice goal">
-          <button class="goal-card selected" data-goal="Interview" aria-pressed="true">
-            <span class="goal-number">01</span><span class="goal-title">Job interviews</span>
-            <span class="goal-description">Answer with evidence, not rehearsed clichés.</span>
-          </button>
-          <button class="goal-card" data-goal="Presentation" aria-pressed="false">
-            <span class="goal-number">02</span><span class="goal-title">Presentations</span>
-            <span class="goal-description">Lead with the message and make it stick.</span>
-          </button>
-          <button class="goal-card" data-goal="Everyday speaking" aria-pressed="false">
-            <span class="goal-number">03</span><span class="goal-title">Everyday speaking</span>
-            <span class="goal-description">Explain ideas clearly without wandering.</span>
-          </button>
-        </div>
-
-        <div id="job-description-wrap" class="field-wrap">
-          <label for="job-description">Job description <span class="optional-label">Optional</span></label>
-          <textarea id="job-description" rows="3" maxlength="9000" placeholder="Paste the job description to tailor your interview questions."></textarea>
-          <p class="field-help">Used only to tailor the questions. Avoid including confidential information.</p>
-        </div>
-
-        <div class="question-toolbar">
-          <div>
-            <h3>Your question set</h3>
-            <p id="question-set-help">Generate 14 questions. Your first three are ready to use.</p>
+          <div class="intro-aside" aria-hidden="true">
+            <span class="intro-aside-line"></span>
+            <span>Clear thinking<br>starts out loud.</span>
           </div>
-          <button id="generate-questions" class="button button-secondary">Generate 14 questions <span aria-hidden="true">↗</span></button>
-        </div>
-        <div id="question-list" class="question-list" aria-live="polite">
-          <div class="empty-state compact-empty"><span class="empty-line"></span><span class="empty-line short"></span><span class="empty-line"></span><p>Generate your question set to begin.</p></div>
-        </div>
-      </section>
+        </section>
 
-      <section id="view-arena" class="view" aria-labelledby="arena-heading" hidden>
-        <div class="section-heading">
-          <div>
-            <p class="eyebrow">Hot Take Arena</p>
-            <h2 id="arena-heading">Take a side. Make it count.</h2>
-          </div>
-          <span class="duration-label hot-duration">5-second prep · 90-second take</span>
-        </div>
-        <div class="arena-layout">
-          <div class="arena-controls">
-            <div class="field-wrap">
-              <label for="hot-category">Choose a domain</label>
-              <select id="hot-category">
-                <option>UX &amp; Product Design</option>
-                <option>Tech &amp; AI</option>
-                <option>Workplace Culture</option>
-                <option>Custom topic</option>
-              </select>
+        <div class="experience-grid">
+          <section id="structured-practice" class="experience-panel structured-panel" aria-labelledby="practice-heading">
+            <div class="panel-heading">
+              <h2 id="practice-heading">Practice with purpose</h2>
+              <p>Build a focused answer for an interview, presentation or everyday conversation.</p>
             </div>
-            <div id="custom-topic-wrap" class="field-wrap" hidden>
-              <label for="custom-topic">Your topic</label>
-              <input id="custom-topic" maxlength="250" placeholder="e.g. product-led growth">
+
+            <div class="goal-grid" role="group" aria-label="Practice goal">
+              <button class="goal-card selected" data-goal="Interview" aria-pressed="true">
+                <span class="goal-number">01</span><span class="goal-title">Job interviews</span>
+                <span class="goal-description">Use specific examples.</span>
+              </button>
+              <button class="goal-card" data-goal="Presentation" aria-pressed="false">
+                <span class="goal-number">02</span><span class="goal-title">Presentations</span>
+                <span class="goal-description">Lead with one message.</span>
+              </button>
+              <button class="goal-card" data-goal="Everyday speaking" aria-pressed="false">
+                <span class="goal-number">03</span><span class="goal-title">Everyday speaking</span>
+                <span class="goal-description">Explain without wandering.</span>
+              </button>
             </div>
-            <fieldset class="heat-fieldset">
-              <legend>Set the heat</legend>
-              <div class="heat-options">
-                <label class="heat-option mild selected"><input type="radio" name="heat" value="Mild" checked><span>Mild</span><small>Constructive debate</small></label>
-                <label class="heat-option spicy"><input type="radio" name="heat" value="Spicy"><span>Spicy</span><small>Strong contrarian view</small></label>
-                <label class="heat-option extra"><input type="radio" name="heat" value="Extra hot"><span>Extra hot</span><small>Curveball constraint</small></label>
+
+            <div id="job-description-wrap" class="field-wrap">
+              <label for="job-description">Job description <span class="optional-label">Optional</span></label>
+              <textarea id="job-description" rows="3" maxlength="9000" placeholder="Paste a job description to tailor your interview questions."></textarea>
+              <p class="field-help">Use it to tailor questions. Leave out confidential information.</p>
+            </div>
+
+            <div class="question-toolbar">
+              <div>
+                <h3>Your question set</h3>
+                <p id="question-set-help">14 questions · Your first three unlock immediately.</p>
               </div>
-            </fieldset>
-            <button id="generate-hot-take" class="button button-primary button-wide">Generate Hot Take <span aria-hidden="true">↗</span></button>
-          </div>
-          <aside class="arena-principle">
-            <span class="principle-mark">“</span>
-            <p>State your position. Support it with one real example. Finish with a line people remember.</p>
-            <span class="principle-caption">THE THREE-PART TAKE</span>
-          </aside>
-        </div>
-        <div id="hot-take-result" class="hot-take-result" hidden>
-          <div class="prompt-meta"><span id="hot-meta-category"></span><span id="hot-meta-heat"></span></div>
-          <p id="hot-take-statement" class="hot-take-statement"></p>
-          <p id="hot-take-constraint" class="constraint-text" hidden></p>
-          <div class="hot-take-actions"><button id="start-hot-take" class="button button-primary">Take the challenge <span aria-hidden="true">→</span></button><span class="prompt-source" id="hot-prompt-source"></span></div>
+              <button id="generate-questions" class="button button-secondary">Generate questions <span aria-hidden="true">↗</span></button>
+            </div>
+            <div id="question-list" class="question-list" aria-live="polite">
+              <div class="empty-state compact-empty"><p>Generate a question set to begin.</p></div>
+            </div>
+          </section>
+
+          <section id="hot-takes" class="experience-panel arena-panel" aria-labelledby="arena-heading">
+            <div class="panel-heading">
+              <h2 id="arena-heading">Take a position</h2>
+              <p>Choose a debate, commit to a view and make the case without hedging.</p>
+            </div>
+
+            <div class="arena-controls">
+              <div class="field-wrap">
+                <label for="hot-category">Choose a domain</label>
+                <select id="hot-category">
+                  <option>UX &amp; Product Design</option>
+                  <option>Tech &amp; AI</option>
+                  <option>Workplace Culture</option>
+                  <option>Custom topic</option>
+                </select>
+              </div>
+              <div id="custom-topic-wrap" class="field-wrap" hidden>
+                <label for="custom-topic">Your topic</label>
+                <input id="custom-topic" maxlength="250" placeholder="e.g. product-led growth">
+              </div>
+              <fieldset class="heat-fieldset">
+                <legend>Choose the intensity</legend>
+                <div class="heat-options">
+                  <label class="heat-option mild selected"><input type="radio" name="heat" value="Mild" checked><span>Mild</span><small>Constructive debate</small></label>
+                  <label class="heat-option spicy"><input type="radio" name="heat" value="Spicy"><span>Spicy</span><small>Contrarian position</small></label>
+                  <label class="heat-option extra"><input type="radio" name="heat" value="Extra hot"><span>Extra hot</span><small>Curveball constraint</small></label>
+                </div>
+              </fieldset>
+              <button id="generate-hot-take" class="button button-hot button-wide">Generate a hot take <span aria-hidden="true">↗</span></button>
+            </div>
+
+            <div class="arena-guidance">
+              <span class="guidance-rule"></span>
+              <p>State your position. Support it with one real example. Finish with a line people remember.</p>
+            </div>
+
+            <div id="hot-take-result" class="hot-take-result" hidden>
+              <div class="prompt-meta"><span id="hot-meta-category"></span><span id="hot-meta-heat"></span></div>
+              <p id="hot-take-statement" class="hot-take-statement"></p>
+              <p id="hot-take-constraint" class="constraint-text" hidden></p>
+              <div class="hot-take-actions"><button id="start-hot-take" class="button button-hot">Take the challenge <span aria-hidden="true">→</span></button><span class="prompt-source" id="hot-prompt-source"></span></div>
+            </div>
+          </section>
         </div>
       </section>
 
-      <section id="view-history" class="view" aria-labelledby="history-heading" hidden>
-        <div class="section-heading">
-          <div><p class="eyebrow">Your progress</p><h2 id="history-heading">Recent practice</h2></div>
-          <span class="duration-label">History expires after 30 days</span>
+      <section id="view-history" class="view history-view" aria-labelledby="history-heading" hidden>
+        <div class="history-heading">
+          <div><h1 id="history-heading">Your practice history</h1><p>Review your sessions and see how your delivery develops.</p></div>
+          <span class="duration-label">Sessions expire after 30 days</span>
         </div>
         <div id="history-list" class="history-list"><div class="empty-state">Your completed sessions will appear here.</div></div>
       </section>
 
       <section id="session-panel" class="session-panel" hidden aria-labelledby="session-prompt">
-        <div class="session-topline"><span id="session-mode-label" class="eyebrow">60-SECOND DRILL</span><button id="close-session" class="text-button">Exit session ×</button></div>
+        <div class="session-topline"><strong id="session-mode-label" class="session-mode-label">60-SECOND DRILL</strong><button id="close-session" class="text-button">Exit session ×</button></div>
         <div class="session-prompt-wrap"><p id="session-prompt" class="session-prompt"></p><p id="session-constraint" class="constraint-text" hidden></p></div>
         <div id="prep-panel" class="prep-panel" hidden><span>Choose your position</span><strong id="prep-countdown">5</strong><small>Get ready to make your case.</small></div>
         <div class="timer-row">
@@ -155,37 +149,35 @@
         <div class="live-status-row"><span id="recording-status" class="recording-status" aria-live="polite" aria-atomic="true">Ready when you are.</span><span id="word-count">0 words</span></div>
         <div class="transcript-live-wrap"><label for="live-transcript">Live transcript <span>Local speech recognition only</span></label><textarea id="live-transcript" rows="5" maxlength="12000" placeholder="Your words will appear here. You can also type your response."></textarea></div>
         <div class="filler-breakdown" id="filler-breakdown"><span>um <b data-filler="um">0</b></span><span>uh <b data-filler="uh">0</b></span><span>like <b data-filler="like">0</b></span><span>kind of <b data-filler="kind of">0</b></span><span>basically <b data-filler="basically">0</b></span><span>you know <b data-filler="you know">0</b></span></div>
-        <div class="session-actions"><button id="start-recording" class="button button-primary">Start speaking <span aria-hidden="true">●</span></button><button id="stop-recording" class="button button-secondary" disabled>Finish response</button><button id="analyse-response" class="button button-primary" hidden>Analyse response</button></div>
-        <p class="privacy-note"><span aria-hidden="true">⌁</span> Audio stays in your browser and is never uploaded. Only your transcript is sent for coaching.</p>
+        <div class="session-actions"><button id="start-recording" class="button button-hot">Start speaking <span aria-hidden="true">●</span></button><button id="stop-recording" class="button button-secondary" disabled>Finish response</button><button id="analyse-response" class="button button-hot" hidden>Analyse response</button></div>
+        <p class="privacy-note">Audio stays in your browser and is never uploaded. Only your transcript is sent for coaching.</p>
       </section>
 
       <section id="scorecard-panel" class="scorecard-panel" hidden aria-labelledby="scorecard-heading">
-        <div class="scorecard-header"><div><p class="eyebrow">Your coaching report</p><h2 id="scorecard-heading">One thing to improve.</h2></div><div class="score-total"><strong id="overall-score">—</strong><span>/ 100</span></div></div>
+        <div class="scorecard-header"><div><h2 id="scorecard-heading">One thing to improve.</h2></div><div class="score-total"><strong id="overall-score">—</strong><span>/ 100</span></div></div>
         <div class="scorecard-grid">
           <div class="score-metrics" id="score-metrics"></div>
           <div class="coaching-panel">
-            <div class="coaching-block flagged-block"><span class="coaching-label">THE LINE TO FIX</span><blockquote id="line-to-fix"></blockquote><p id="line-diagnosis"></p></div>
-            <div class="coaching-block"><span class="coaching-label">A STRONGER OPENING</span><p id="opening-rewrite" class="rewrite-text"></p></div>
-            <div id="stance-block" class="coaching-block" hidden><span class="coaching-label">STANCE CLARITY</span><p id="stance-verdict"></p><p id="punchier-hook" class="rewrite-text"></p></div>
-            <div class="coaching-block"><span class="coaching-label">NEXT FOCUS</span><p id="next-focus"></p></div>
+            <div class="coaching-block flagged-block"><h3 class="coaching-title">Line to fix</h3><blockquote id="line-to-fix"></blockquote><p id="line-diagnosis"></p></div>
+            <div class="coaching-block"><h3 class="coaching-title">A stronger opening</h3><p id="opening-rewrite" class="rewrite-text"></p></div>
+            <div id="stance-block" class="coaching-block" hidden><h3 class="coaching-title">Stance clarity</h3><p id="stance-verdict"></p><p id="punchier-hook" class="rewrite-text"></p></div>
+            <div class="coaching-block"><h3 class="coaching-title">Next focus</h3><p id="next-focus"></p></div>
           </div>
         </div>
         <div class="transcript-review"><h3>Transcript review</h3><div id="annotated-transcript" class="annotated-transcript"></div></div>
-        <div class="scorecard-footer"><span id="score-source" class="prompt-source"></span><div><span id="score-delta" class="score-delta"></span><button id="retry-session" class="button button-primary">Try again · Free retry</button><button id="finish-session" class="button button-secondary">Done</button></div></div>
+        <div class="scorecard-footer"><span id="score-source" class="prompt-source"></span><div><span id="score-delta" class="score-delta"></span><button id="retry-session" class="button button-hot">Try again · Free retry</button><button id="finish-session" class="button button-secondary">Done</button></div></div>
       </section>
     </main>
-
-    <footer class="footer"><span>SpeakEasy</span><span>Practice privately. Speak with purpose.</span><button id="privacy-open" class="text-button">Privacy</button></footer>
   </div>
 
   <dialog id="settings-dialog" class="settings-dialog">
     <form method="dialog" class="dialog-close-row"><button class="icon-button" aria-label="Close settings">×</button></form>
-    <p class="eyebrow">Your privacy</p><h2>Your voice is never stored.</h2>
+    <h2>Settings &amp; privacy</h2>
     <div class="privacy-detail"><strong>Audio</strong><p>Microphone audio is processed in your browser. SpeakEasy does not upload or store audio files.</p></div>
     <div class="privacy-detail"><strong>Transcript</strong><p>Your transcript is sent to Firebase AI Logic for coaching. Completed sessions are saved only in this browser for up to 30 days.</p></div>
     <div class="privacy-detail"><strong>History</strong><p>History and the daily practice allowance are stored locally in this browser using IndexedDB. They are not uploaded to SpeakEasy servers or synced between devices. Clearing this site's browser data removes them.</p></div>
     <div class="privacy-detail"><strong>AI processing</strong><p>Prompt generation prefers on-device Gemini Nano. Coaching prefers cloud Gemini and can fall back according to Firebase AI Logic's hybrid mode.</p></div>
-    <form method="dialog"><button class="button button-primary button-wide">Close</button></form>
+    <form method="dialog"><button class="button button-hot button-wide">Close</button></form>
   </dialog>
 
   <div id="toast" class="toast" role="status" aria-live="polite"></div>

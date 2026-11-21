@@ -4,15 +4,29 @@ const SESSION_STORE = "sessions";
 const USAGE_STORE = "usage";
 const RESERVATION_STORE = "reservations";
 
-let databasePromise;
+let databasePromise = null;
+let databaseConnection = null;
+const transactionConnections = new WeakMap();
+
+function resetDatabaseConnection(db = null) {
+  if (!db || databaseConnection === db) {
+    databaseConnection = null;
+    databasePromise = null;
+  }
+}
+
+function isClosingConnectionError(error) {
+  return error?.name === "InvalidStateError" || /database connection is closing|database.*closed/i.test(String(error?.message || ""));
+}
 
 function openDatabase() {
   if (!("indexedDB" in window)) {
     return Promise.reject(new Error("This browser does not support local session history. Use a current version of Chrome, Edge, Firefox or Safari."));
   }
+  if (databaseConnection) return Promise.resolve(databaseConnection);
   if (databasePromise) return databasePromise;
 
-  databasePromise = new Promise((resolve, reject) => {
+  const pending = new Promise((resolve, reject) => {
     const request = indexedDB.open(DATABASE_NAME, DATABASE_VERSION);
     request.onupgradeneeded = () => {
       const db = request.result;
@@ -27,20 +41,62 @@ function openDatabase() {
         db.createObjectStore(RESERVATION_STORE, { keyPath: "id" });
       }
     };
-    request.onsuccess = () => resolve(request.result);
+    request.onsuccess = () => {
+      const db = request.result;
+      databaseConnection = db;
+      db.onversionchange = () => {
+        resetDatabaseConnection(db);
+        try { db.close(); } catch (_) { /* Connection is already closing. */ }
+      };
+      db.onclose = () => resetDatabaseConnection(db);
+      db.onerror = () => {
+        if (db.error?.name === "InvalidStateError") resetDatabaseConnection(db);
+      };
+      resolve(db);
+    };
     request.onerror = () => reject(request.error || new Error("Unable to open local session history."));
     request.onblocked = () => reject(new Error("Close other SpeakEasy tabs to update local session history."));
-  }).catch((error) => {
-    databasePromise = null;
+  });
+
+  databasePromise = pending.catch((error) => {
+    resetDatabaseConnection();
     throw error;
   });
   return databasePromise;
 }
 
+async function createTransaction(storeNames, mode) {
+  let lastError;
+  for (let attempt = 0; attempt < 2; attempt += 1) {
+    const db = await openDatabase();
+    try {
+      const transaction = db.transaction(storeNames, mode);
+      transactionConnections.set(transaction, db);
+      return transaction;
+    } catch (error) {
+      lastError = error;
+      resetDatabaseConnection(db);
+      if (!isClosingConnectionError(error) || attempt === 1) break;
+    }
+  }
+  if (isClosingConnectionError(lastError)) {
+    throw new Error("Local history briefly disconnected. Your current response is still available; try the action again.");
+  }
+  throw lastError || new Error("Unable to access local session history.");
+}
+
 function transactionComplete(transaction) {
   return new Promise((resolve, reject) => {
     transaction.oncomplete = () => resolve();
-    transaction.onabort = () => reject(transaction.error || new Error("Local storage transaction was cancelled."));
+    transaction.onabort = () => {
+      const error = transaction.error || new Error("Local storage transaction was cancelled.");
+      if (isClosingConnectionError(error)) {
+        const connection = transactionConnections.get(transaction);
+        resetDatabaseConnection(connection);
+        try { connection?.close(); } catch (_) { /* The browser is already closing this connection. */ }
+      }
+      reject(error);
+    };
     transaction.onerror = () => reject(transaction.error || new Error("Local storage transaction failed."));
   });
 }
@@ -49,8 +105,8 @@ function utcDateKey(timestamp = Date.now()) {
   return new Date(timestamp).toISOString().slice(0, 10);
 }
 
-async function releaseExpiredReservations(db, now = Date.now()) {
-  const tx = db.transaction([USAGE_STORE, RESERVATION_STORE], "readwrite");
+async function releaseExpiredReservations(now = Date.now()) {
+  const tx = await createTransaction([USAGE_STORE, RESERVATION_STORE], "readwrite");
   const done = transactionComplete(tx);
   const usageStore = tx.objectStore(USAGE_STORE);
   const reservationStore = tx.objectStore(RESERVATION_STORE);
@@ -74,10 +130,9 @@ async function releaseExpiredReservations(db, now = Date.now()) {
 }
 
 export async function getDailyUsage(limit) {
-  const db = await openDatabase();
-  await releaseExpiredReservations(db);
+  await releaseExpiredReservations();
   const dateKey = utcDateKey();
-  const tx = db.transaction(USAGE_STORE, "readonly");
+  const tx = await createTransaction(USAGE_STORE, "readonly");
   const done = transactionComplete(tx);
   const request = tx.objectStore(USAGE_STORE).get(dateKey);
   const result = await new Promise((resolve, reject) => {
@@ -89,11 +144,10 @@ export async function getDailyUsage(limit) {
 }
 
 export async function reserveDailyUsage(limit, purpose) {
-  const db = await openDatabase();
-  await releaseExpiredReservations(db);
+  await releaseExpiredReservations();
   const dateKey = utcDateKey();
   const reservationId = crypto.randomUUID();
-  const tx = db.transaction([USAGE_STORE, RESERVATION_STORE], "readwrite");
+  const tx = await createTransaction([USAGE_STORE, RESERVATION_STORE], "readwrite");
   const done = transactionComplete(tx);
   const usageStore = tx.objectStore(USAGE_STORE);
   const reservationStore = tx.objectStore(RESERVATION_STORE);
@@ -127,8 +181,7 @@ export async function reserveDailyUsage(limit, purpose) {
 
 export async function releaseDailyReservation(reservationId) {
   if (!reservationId) return;
-  const db = await openDatabase();
-  const tx = db.transaction([USAGE_STORE, RESERVATION_STORE], "readwrite");
+  const tx = await createTransaction([USAGE_STORE, RESERVATION_STORE], "readwrite");
   const done = transactionComplete(tx);
   const usageStore = tx.objectStore(USAGE_STORE);
   const reservationStore = tx.objectStore(RESERVATION_STORE);
@@ -153,16 +206,14 @@ export async function releaseDailyReservation(reservationId) {
 
 export async function consumeDailyReservation(reservationId) {
   if (!reservationId) return;
-  const db = await openDatabase();
-  const tx = db.transaction(RESERVATION_STORE, "readwrite");
+  const tx = await createTransaction(RESERVATION_STORE, "readwrite");
   const done = transactionComplete(tx);
   tx.objectStore(RESERVATION_STORE).delete(reservationId);
   await done;
 }
 
 export async function saveSession(session) {
-  const db = await openDatabase();
-  const tx = db.transaction(SESSION_STORE, "readwrite");
+  const tx = await createTransaction(SESSION_STORE, "readwrite");
   const done = transactionComplete(tx);
   tx.objectStore(SESSION_STORE).put(session);
   await done;
@@ -170,8 +221,7 @@ export async function saveSession(session) {
 }
 
 export async function appendRetry(sessionId, attempt) {
-  const db = await openDatabase();
-  const tx = db.transaction(SESSION_STORE, "readwrite");
+  const tx = await createTransaction(SESSION_STORE, "readwrite");
   const done = transactionComplete(tx);
   const store = tx.objectStore(SESSION_STORE);
   let outcome;
@@ -203,8 +253,7 @@ export async function appendRetry(sessionId, attempt) {
 }
 
 export async function getSession(sessionId) {
-  const db = await openDatabase();
-  const tx = db.transaction(SESSION_STORE, "readonly");
+  const tx = await createTransaction(SESSION_STORE, "readonly");
   const done = transactionComplete(tx);
   const request = tx.objectStore(SESSION_STORE).get(sessionId);
   const result = await new Promise((resolve, reject) => {
@@ -220,8 +269,7 @@ export async function getSession(sessionId) {
 }
 
 export async function listSessions(limit = 30) {
-  const db = await openDatabase();
-  const tx = db.transaction(SESSION_STORE, "readwrite");
+  const tx = await createTransaction(SESSION_STORE, "readwrite");
   const done = transactionComplete(tx);
   const store = tx.objectStore(SESSION_STORE);
   const request = store.getAll();
@@ -242,8 +290,7 @@ export async function listSessions(limit = 30) {
 }
 
 export async function deleteSession(sessionId) {
-  const db = await openDatabase();
-  const tx = db.transaction(SESSION_STORE, "readwrite");
+  const tx = await createTransaction(SESSION_STORE, "readwrite");
   const done = transactionComplete(tx);
   tx.objectStore(SESSION_STORE).delete(sessionId);
   await done;

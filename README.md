@@ -18,6 +18,10 @@ There is deliberately **no server-side database**. The project has no SQLite, Po
 
 History and the daily practice allowance belong to the user's current browser profile on the current device. They are not synchronized to other devices, and clearing browser site data removes them. Because there is no persistent server-side store or account system, the daily allowance is a convenience limit, not tamper-proof enforcement: a user can reset it by clearing local site data or using another browser/device.
 
+## Interface design
+
+The initial Practice page presents both workflows together: Structured Practice and Hot Take Arena are visible side by side on desktop and stack on smaller screens. The Hot Take navigation item scrolls to its section within the same page; it does not switch to a separate application view. The interface uses a restrained editorial visual system, with no eyebrow labels, no footer, no standalone S brand tile, and a prominent Settings button.
+
 ## Features
 
 ### Structured practice

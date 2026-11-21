@@ -123,7 +123,7 @@ function buildModel(mode, schema, temperature = 0.65) {
 
 function assertConfigured() {
   if (!config.firebaseReady || !ai || !questionModel || !hotTakeModel || !coachModel) {
-    throw new Error("Firebase AI Logic is not configured. Add the Firebase web configuration and reCAPTCHA Enterprise site key to the Python environment, then restart SpeakEasy.");
+    throw new Error("AI coaching is unavailable right now. Check the Firebase AI Logic configuration and try again.");
   }
 }
 
@@ -149,8 +149,6 @@ if (config.firebaseReady) {
     console.error("Firebase AI Logic initialization failed.", error);
     notifyStatus("Firebase AI Logic setup needs attention", "error");
   }
-} else {
-  notifyStatus("Add Firebase AI Logic configuration", "error");
 }
 
 export function isAIReady() {
