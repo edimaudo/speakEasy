@@ -12,6 +12,7 @@ def test_python_first_structure_has_no_js_build_stack():
     assert (ROOT / "main.py").exists()
     assert (ROOT / "requirements.txt").exists()
     assert (ROOT / "vercel.json").exists()
+    assert (ROOT / "templates" / "landing.html").exists()
     assert (ROOT / "templates" / "index.html").exists()
 
 
@@ -53,7 +54,7 @@ def test_no_other_firebase_products_or_admin_sdks_are_installed():
 
 def test_templates_and_static_assets_exist():
     assert (ROOT / "public" / "static" / "css" / "styles.css").exists()
-    for filename in ("firebase-ai.js", "app.js", "local-store.js"):
+    for filename in ("firebase-ai.js", "app.js", "local-store.js", "preferences.js", "landing.js"):
         assert (ROOT / "public" / "static" / "js" / filename).exists()
 
 
@@ -79,19 +80,26 @@ def test_all_literal_javascript_id_selectors_exist_in_template():
 
 
 def test_html_static_asset_paths_map_to_public_directory(client):
-    home = client.get("/")
-    assert home.status_code == 200
-    assert 'href="/static/css/styles.css"' in home.text
-    assert 'src="/static/js/app.js"' in home.text
+    landing = client.get("/")
+    app = client.get("/app")
+    assert landing.status_code == 200
+    assert app.status_code == 200
+    assert 'href="/static/css/styles.css"' in landing.text
+    assert 'src="/static/js/landing.js"' in landing.text
+    assert 'src="/static/js/app.js"' in app.text
 
     css = client.get("/static/css/styles.css")
     app_js = client.get("/static/js/app.js")
     ai_js = client.get("/static/js/firebase-ai.js")
     store_js = client.get("/static/js/local-store.js")
+    prefs_js = client.get("/static/js/preferences.js")
+    landing_js = client.get("/static/js/landing.js")
     assert css.status_code == 200 and "text/css" in css.headers["content-type"]
     assert app_js.status_code == 200 and "javascript" in app_js.headers["content-type"]
     assert ai_js.status_code == 200 and "firebase-ai.js" in ai_js.text
     assert store_js.status_code == 200 and "indexedDB.open" in store_js.text
+    assert prefs_js.status_code == 200 and "setupAppearanceSettings" in prefs_js.text
+    assert landing_js.status_code == 200 and "data-demo-mode" in landing_js.text
 
 
 def test_no_typescript_or_node_frontend_build_files_exist():
@@ -162,30 +170,39 @@ def test_main_interface_has_no_eyebrows_footers_or_brand_mark():
     assert ".footer" not in css
 
 
-def test_landing_page_presents_one_product_with_two_practice_formats():
-    markup = (ROOT / "templates" / "index.html").read_text()
-    assert 'id="view-practice"' in markup
-    assert 'id="practice-workspace"' in markup
-    assert 'role="tablist" aria-label="Practice format"' in markup
-    assert 'data-practice-mode="structured"' in markup
-    assert 'data-practice-mode="hot-take"' in markup
-    assert 'data-practice-panel="structured"' in markup
-    assert 'data-practice-panel="hot-take" hidden' in markup
-    assert 'id="hot-take-practice"' in markup
-    assert 'aria-controls="hot-take-practice"' in markup
-    assert 'data-view="arena"' not in markup
-    assert 'Hot Take Arena' not in markup
-    assert 'data-view="arena"' not in markup
-    assert 'Hot Take</button>\n' not in markup
+def test_landing_page_uses_conversion_structure_and_shows_one_product(client):
+    landing = (ROOT / "templates" / "landing.html").read_text()
+    assert "Speak clearly." in landing
+    assert "Make your point." in landing
+    assert 'class="product-preview"' in landing
+    assert 'role="tablist" aria-label="Practice example"' in landing
+    assert 'data-demo-mode="structured"' in landing
+    assert 'data-demo-mode="spontaneous"' in landing
+    assert 'id="how-it-works"' in landing
+    assert 'id="practice"' in landing
+    assert 'href="/app"' in landing
+    assert "Start practising" in landing
+    assert "social proof" not in landing.lower()
+    assert "Hot Take Arena" not in landing
+    assert "Firebase" not in landing
+    assert "Gemini" not in landing
+    assert "eyebrow" not in landing.lower()
+    assert "<footer" not in landing.lower()
 
-    # Both activities live inside one shared workspace, not side-by-side product cards.
-    workspace_start = markup.index('id="practice-workspace"')
-    history_start = markup.index('id="view-history"')
-    workspace = markup[workspace_start:history_start]
-    assert workspace.index('data-practice-panel="structured"') < workspace.index('data-practice-panel="hot-take"')
-    assert workspace.count('class="practice-mode-panel"') == 2
-    assert 'experience-grid' not in markup
-    assert 'experience-panel' not in markup
+    # The marketing preview is one shared interface with a switchable prompt, not two product cards.
+    assert landing.count('class="product-preview"') == 1
+    assert "product-card" not in landing
+    assert "experience-grid" not in landing
+
+    application = (ROOT / "templates" / "index.html").read_text()
+    assert 'id="practice-workspace"' in application
+    assert 'role="tablist" aria-label="Practice format"' in application
+    assert 'data-practice-mode="structured"' in application
+    assert 'data-practice-mode="hot-take"' in application
+    assert 'data-practice-panel="structured"' in application
+    assert 'data-practice-panel="hot-take" hidden' in application
+    assert "Hot Take Arena" not in application
+    assert 'data-view="arena"' not in application
 
     app_js = (ROOT / "public" / "static" / "js" / "app.js").read_text()
     assert 'function setPracticeMode(mode, moveFocus = false)' in app_js
@@ -193,17 +210,33 @@ def test_landing_page_presents_one_product_with_two_practice_formats():
     assert 'setPracticeMode(tabs[next].dataset.practiceMode, true)' in app_js
     assert 'view === "arena"' not in app_js
 
-    css = (ROOT / "public" / "static" / "css" / "styles.css").read_text()
-    assert '.practice-workspace {' in css
-    assert '.practice-switcher {' in css
-    assert '.practice-tab.selected {' in css
-    assert '.experience-grid' not in css
-    assert '.arena-panel' not in css
-    assert '.arena-controls' not in css
-    assert '.arena-guidance' not in css
+    landing_js = (ROOT / "public" / "static" / "js" / "landing.js").read_text()
+    assert "demoModes" in landing_js
+    assert "aria-selected" in landing_js
 
-    ai_prompts = (ROOT / "public" / "static" / "js" / "firebase-ai.js").read_text()
-    assert "Hot Take Arena" not in ai_prompts
+
+def test_settings_has_theme_and_font_size_controls_without_implementation_terms():
+    application = (ROOT / "templates" / "index.html").read_text()
+    dialog = application[application.index('<dialog id="settings-dialog"'):application.index('<div id="toast"')]
+    for label in ('Light', 'Dark', 'Small', 'Medium', 'Large'):
+        assert f">{label}</button>" in dialog
+    for implementation_term in ('Firebase', 'IndexedDB', 'Gemini', 'Gemini Nano'):
+        assert implementation_term.lower() not in dialog.lower()
+    preferences = (ROOT / "public" / "static" / "js" / "preferences.js").read_text()
+    assert 'localStorage.setItem(STORAGE_KEY' in preferences
+    assert 'data-theme-choice' in preferences
+    assert 'data-font-size-choice' in preferences
+    css = (ROOT / "public" / "static" / "css" / "styles.css").read_text()
+    assert ':root[data-theme="dark"]' in css
+    assert ':root[data-font-size="small"]' in css
+    assert ':root[data-font-size="medium"]' in css
+    assert ':root[data-font-size="large"]' in css
+
+
+def test_section_focus_outline_is_removed_but_control_focus_is_retained():
+    css = (ROOT / "public" / "static" / "css" / "styles.css").read_text()
+    assert ':where(section, main, article, [role="tabpanel"], .view):focus-visible { outline: none; box-shadow: none; }' in css
+    assert ':where(a, button, input, textarea, select, summary, [tabindex]):focus-visible' in css
 
 
 def test_removed_landing_copy_and_ai_setup_banner():

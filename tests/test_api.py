@@ -34,8 +34,20 @@ def scorecard(transcript: str, hot_take: bool = False):
 TRANSCRIPT = "I think we should simplify the process because it reduces handoffs."
 
 
-def test_home_renders_application_and_ai_configuration(client):
+def test_root_renders_marketing_landing_page_with_a_single_product_value_proposition(client):
     response = client.get("/")
+    assert response.status_code == 200
+    assert "Speak clearly." in response.text
+    assert "Make your point." in response.text
+    assert "Start practising" in response.text
+    assert "A simple loop. A stronger next attempt." in response.text
+    assert 'href="/app"' in response.text
+    assert "Firebase" not in response.text
+    assert "Gemini" not in response.text
+
+
+def test_application_is_served_from_app_route_and_has_ai_configuration(client):
+    response = client.get("/app")
     assert response.status_code == 200
     assert "SpeakEasy" in response.text
     assert "window.SPEAKEASY_CONFIG" in response.text

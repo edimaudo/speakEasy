@@ -1,4 +1,5 @@
 import { isAIReady, generateQuestionSet, generateHotTake, coachTranscript } from "./firebase-ai.js";
+import { setupAppearanceSettings } from "./preferences.js";
 import {
   getDailyUsage,
   reserveDailyUsage,
@@ -846,6 +847,7 @@ function setupEvents() {
     if (remove) deleteHistorySession(remove.dataset.historyDelete);
   });
   const dialog = $("#settings-dialog");
+  setupAppearanceSettings(dialog);
   $("#settings-toggle").addEventListener("click", () => dialog.showModal());
   dialog.addEventListener("click", (event) => {
     if (event.target === dialog) dialog.close();

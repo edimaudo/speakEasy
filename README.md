@@ -20,7 +20,9 @@ History and the daily practice allowance belong to the user's current browser pr
 
 ## Interface design
 
-SpeakEasy is one product with one Practice workspace and two selectable practice formats. A single accessible selector switches between Structured practice (interviews, presentations and everyday speaking) and Hot Take (spontaneous thinking and defending a position). Only the selected format is displayed; neither format has a separate product card, separate navigation destination, or separate visual identity. The interface uses one consistent editorial visual system, no eyebrow labels, no footer, no standalone S brand tile, and a prominent Settings button.
+The root route (`/`) is a conversion-focused product landing page: it explains the speaking-practice outcome, demonstrates the product in one interactive preview, explains the practice loop, describes the main capabilities, and repeats one primary call to action. It does not use fabricated testimonials or a separate product identity for either practice format.
+
+The application is served at `/app`. It is one product with one Practice workspace and two selectable practice formats. A single accessible selector switches between Structured practice (interviews, presentations and everyday speaking) and Hot Take (spontaneous thinking and defending a position). Only the selected format is displayed; neither format has a separate product card, separate navigation destination, or separate visual identity. The interface uses one consistent visual system, no eyebrow labels, no footer, no standalone S brand tile, and a prominent Settings button. Settings provide working Light/Dark and Small/Medium/Large text-size controls; preferences apply to both the landing page and application and are retained in local browser storage.
 
 ## Features
 
@@ -64,6 +66,12 @@ SpeakEasy is one product with one Practice workspace and two selectable practice
 - A Vercel account for deployment.
 
 No Node.js, npm, TypeScript, frontend bundler, database, or external storage service is required.
+
+## Routes
+
+- `/` — product landing page with one interactive product demonstration.
+- `/app` — speaking practice application with one workspace and two selectable practice formats.
+- `/health` — deployment health check.
 
 ## Local setup
 

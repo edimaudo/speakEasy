@@ -65,8 +65,7 @@ def create_app(settings: Settings | None = None) -> FastAPI:
         response.headers.setdefault("Cache-Control", "no-store")
         return response
 
-    @app.get("/", response_class=HTMLResponse)
-    def home(request: Request):
+    def render_application(request: Request):
         config = {
             "firebase": settings.firebase_config,
             "firebaseReady": settings.firebase_ready,
@@ -78,6 +77,14 @@ def create_app(settings: Settings | None = None) -> FastAPI:
             "retentionDays": settings.retention_days,
         }
         return templates.TemplateResponse(request, "index.html", {"config": config})
+
+    @app.get("/", response_class=HTMLResponse)
+    def home(request: Request):
+        return templates.TemplateResponse(request, "landing.html", {})
+
+    @app.get("/app", response_class=HTMLResponse)
+    def application(request: Request):
+        return render_application(request)
 
     @app.get("/health")
     def health():

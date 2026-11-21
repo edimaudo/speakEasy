@@ -9,6 +9,15 @@
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700;800&family=Manrope:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <script>
+    (function () {
+      try {
+        const prefs = JSON.parse(localStorage.getItem("speakeasy.preferences.v1") || "{}");
+        document.documentElement.dataset.theme = prefs.theme === "dark" ? "dark" : "light";
+        document.documentElement.dataset.fontSize = ["small", "medium", "large"].includes(prefs.fontSize) ? prefs.fontSize : "medium";
+      } catch (_) { document.documentElement.dataset.theme = "light"; document.documentElement.dataset.fontSize = "medium"; }
+    })();
+  </script>
   <link rel="stylesheet" href="/static/css/styles.css">
 </head>
 <body class="error-page-body">

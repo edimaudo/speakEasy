@@ -5,10 +5,22 @@
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <meta name="theme-color" content="#f2f0e9">
   <meta name="description" content="SpeakEasy helps you practise clear answers and defend strong ideas.">
-  <title>SpeakEasy — Practice how you speak</title>
+  <title>SpeakEasy — Practice your speaking</title>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700;800&family=Manrope:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <script>
+    (function () {
+      try {
+        const prefs = JSON.parse(localStorage.getItem("speakeasy.preferences.v1") || "{}");
+        document.documentElement.dataset.theme = prefs.theme === "dark" ? "dark" : "light";
+        document.documentElement.dataset.fontSize = ["small", "medium", "large"].includes(prefs.fontSize) ? prefs.fontSize : "medium";
+      } catch (_) {
+        document.documentElement.dataset.theme = "light";
+        document.documentElement.dataset.fontSize = "medium";
+      }
+    })();
+  </script>
   <link rel="stylesheet" href="/static/css/styles.css">
   <script>
     window.SPEAKEASY_CONFIG = {{ config|tojson }};
@@ -31,35 +43,35 @@
 
     <main>
       <section id="view-practice" class="view active" aria-label="SpeakEasy practice">
-        <section class="intro-row">
+        <header class="app-intro">
           <div class="intro-copy-block">
-            <h1>Find your point.<br><em>Make it clear.</em></h1>
-            <p class="intro-copy">One place to strengthen how you communicate — from considered answers to thinking on your feet. Choose a format, speak, and get specific coaching.</p>
+            <h1>Practise your<br><em>speaking.</em></h1>
+            <p class="intro-copy">Prepare a clear answer or respond to an idea on the spot. Speak out loud, review specific feedback and strengthen your next attempt.</p>
           </div>
-        </section>
+        </header>
 
         <section id="practice-workspace" class="practice-workspace" aria-labelledby="workspace-heading">
           <div class="workspace-heading">
             <div>
-              <h2 id="workspace-heading">Choose a practice format</h2>
-              <p>Every session follows the same loop: prompt, timed response and focused coaching.</p>
+              <h2 id="workspace-heading">Choose how to practise</h2>
+              <p>One practice space for considered answers and spontaneous thinking.</p>
             </div>
           </div>
 
           <div class="practice-switcher" role="tablist" aria-label="Practice format">
             <button id="tab-structured" class="practice-tab selected" type="button" role="tab" aria-selected="true" aria-controls="structured-practice" data-practice-mode="structured">
-              <span>Structured practice</span>
+              <span>Prepare an answer</span>
               <small>Interviews · Presentations · Everyday speaking</small>
             </button>
             <button id="tab-hot-take" class="practice-tab" type="button" role="tab" aria-selected="false" aria-controls="hot-take-practice" data-practice-mode="hot-take" tabindex="-1">
-              <span>Hot Take</span>
-              <small>Spontaneous thinking · Defend a position</small>
+              <span>Think on your feet</span>
+              <small>Take a position · Make your case</small>
             </button>
           </div>
 
           <section id="structured-practice" class="practice-mode-panel" role="tabpanel" aria-labelledby="tab-structured" data-practice-panel="structured">
             <div class="panel-heading">
-              <h3>Build a focused response</h3>
+              <h3>Prepare an answer</h3>
               <p>Prepare for an interview, shape a presentation or practise everyday conversations.</p>
             </div>
 
@@ -98,7 +110,7 @@
 
           <section id="hot-take-practice" class="practice-mode-panel" role="tabpanel" aria-labelledby="tab-hot-take" data-practice-panel="hot-take" hidden>
             <div class="panel-heading">
-              <h3>Think on your feet</h3>
+              <h3>Respond in the moment</h3>
               <p>Respond to a challenging idea, choose a side and make your case without hedging.</p>
             </div>
 
@@ -183,14 +195,41 @@
     </main>
   </div>
 
-  <dialog id="settings-dialog" class="settings-dialog">
-    <form method="dialog" class="dialog-close-row"><button class="icon-button" aria-label="Close settings">×</button></form>
-    <h2>Settings &amp; privacy</h2>
-    <div class="privacy-detail"><strong>Audio</strong><p>Microphone audio is processed in your browser. SpeakEasy does not upload or store audio files.</p></div>
-    <div class="privacy-detail"><strong>Transcript</strong><p>Your transcript is sent to Firebase AI Logic for coaching. Completed sessions are saved only in this browser for up to 30 days.</p></div>
-    <div class="privacy-detail"><strong>History</strong><p>History and the daily practice allowance are stored locally in this browser using IndexedDB. They are not uploaded to SpeakEasy servers or synced between devices. Clearing this site's browser data removes them.</p></div>
-    <div class="privacy-detail"><strong>AI processing</strong><p>Prompt generation prefers on-device Gemini Nano. Coaching prefers cloud Gemini and can fall back according to Firebase AI Logic's hybrid mode.</p></div>
-    <form method="dialog"><button class="button button-hot button-wide">Close</button></form>
+  <dialog id="settings-dialog" class="settings-dialog" aria-labelledby="settings-heading">
+    <div class="settings-header">
+      <div>
+        <h2 id="settings-heading">Settings</h2>
+        <p>Adjust how SpeakEasy looks and review your privacy choices.</p>
+      </div>
+      <form method="dialog"><button class="icon-button" aria-label="Close settings">×</button></form>
+    </div>
+
+    <section class="settings-section" aria-labelledby="appearance-heading">
+      <h3 id="appearance-heading">Appearance</h3>
+      <div class="setting-row">
+        <div class="setting-copy"><strong>Colour theme</strong><span>Choose a light or dark appearance.</span></div>
+        <div class="setting-options" role="group" aria-label="Colour theme">
+          <button type="button" data-theme-choice="light" aria-pressed="true">Light</button>
+          <button type="button" data-theme-choice="dark" aria-pressed="false">Dark</button>
+        </div>
+      </div>
+      <div class="setting-row">
+        <div class="setting-copy"><strong>Text size</strong><span>Adjust the size of text across the app.</span></div>
+        <div class="setting-options text-size-options" role="group" aria-label="Text size">
+          <button type="button" data-font-size-choice="small" aria-pressed="false">Small</button>
+          <button type="button" data-font-size-choice="medium" aria-pressed="true">Medium</button>
+          <button type="button" data-font-size-choice="large" aria-pressed="false">Large</button>
+        </div>
+      </div>
+    </section>
+
+    <section class="settings-section" aria-labelledby="privacy-heading">
+      <h3 id="privacy-heading">Privacy</h3>
+      <div class="privacy-detail"><strong>Microphone</strong><p>Your microphone audio is processed while you practise. Audio recordings are not saved.</p></div>
+      <div class="privacy-detail"><strong>Feedback</strong><p>Your transcript is sent to our coaching service to create your score and suggestions.</p></div>
+      <div class="privacy-detail"><strong>Practice history</strong><p>Your transcripts and scorecards stay in this browser for up to 30 days. They are not synced between devices. Clearing browser data removes them.</p></div>
+    </section>
+    <form method="dialog"><button class="button button-primary button-wide">Done</button></form>
   </dialog>
 
   <div id="toast" class="toast" role="status" aria-live="polite"></div>
