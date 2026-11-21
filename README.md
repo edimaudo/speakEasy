@@ -20,7 +20,7 @@ History and the daily practice allowance belong to the user's current browser pr
 
 ## Interface design
 
-The landing page uses only the product information in the PRD: 60-second structured practice, 90-second spontaneous takes, specific coaching feedback, and the three-step practice loop. It contains one headline, one concise explanation, one interactive product preview, one primary call to action, and the three-step loop. It does not add testimonials, pricing, FAQs, extra feature sections, repeated CTAs, or invented marketing claims.
+The landing page uses only the product information in the PRD: 60-second structured practice, 90-second spontaneous takes, and specific coaching feedback. It contains one headline, one concise explanation, one interactive product preview, and one primary call to action. The numbered process steps have been removed. It does not add testimonials, pricing, FAQs, extra feature sections, repeated CTAs, or invented marketing claims.
 
 The application is a speaking-practice tool rather than a chat interface. Practice setup is presented beside its question or prompt output in an open two-column working layout. Controls use simple rows, dividers, a restrained rust accent, and generous working space instead of stacked AI-style cards, chat bubbles, gradients, or oversized pill controls. Structured practice and Hot Take remain two formats within the same product and use the same layout and visual language.
 

@@ -193,7 +193,10 @@ def test_landing_page_is_concise_and_uses_only_prd_content(client):
     assert "<footer" not in landing.lower()
     assert "What you can practise" not in landing
     assert "landing-feature" not in landing
-    assert landing.count("<section") == 2
+    assert landing.count("<section") == 1
+    assert "Choose a prompt" not in landing
+    assert "Speak under the timer" not in landing
+    assert "Fix one thing and retry" not in landing
 
     application = (ROOT / "templates" / "index.html").read_text()
     assert 'id="practice-workspace"' in application
@@ -297,7 +300,7 @@ def test_removed_landing_copy_and_ai_setup_banner():
     assert "90 seconds to take a stand" not in markup.lower()
     assert "ai setup required" not in markup.lower()
     assert "ai setup required" not in app_js.lower()
-    assert 'id="ai-status" class="status-pill" hidden' in markup
+    assert 'id="ai-status" class="status-pill" role="status" aria-live="polite" hidden' in markup
     assert "Add Firebase AI Logic configuration" not in firebase_ai
 
 
@@ -331,3 +334,105 @@ def test_error_pages_follow_the_same_brand_and_no_conversation_copy():
         assert "brand-period" not in markup
         assert "conversation" not in markup.lower()
         assert "error-page-footnote" not in markup
+
+
+def test_structured_practice_has_context_inputs_for_each_goal():
+    markup = (ROOT / "templates" / "index.html").read_text()
+    app_js = (ROOT / "public" / "static" / "js" / "app.js").read_text()
+    ai_js = (ROOT / "public" / "static" / "js" / "firebase-ai.js").read_text()
+    assert 'id="job-description"' in markup
+    assert 'id="presentation-context"' in markup
+    assert 'id="everyday-context"' in markup
+    for identifier in ("job-description", "presentation-context", "everyday-context"):
+        assert f'<label for="{identifier}"' in markup
+    assert '$("#presentation-context").value' in app_js
+    assert '$("#everyday-context").value' in app_js
+    assert "<presentation_context>" in ai_js
+    assert "<speaking_context>" in ai_js
+
+
+def test_question_heading_does_not_expose_browser_session_allowance():
+    markup = (ROOT / "templates" / "index.html").read_text()
+    app_js = (ROOT / "public" / "static" / "js" / "app.js").read_text()
+    assert "Choose a question to practise." in markup
+    assert "free sessions left today" not in markup.lower()
+    assert "free sessions left today" not in app_js.lower()
+    assert "of ${usage.limit}" not in app_js
+
+
+def test_ai_configuration_errors_are_user_friendly():
+    ai_js = (ROOT / "public" / "static" / "js" / "firebase-ai.js").read_text()
+    assert "AI coaching is unavailable right now. Check the Firebase AI Logic configuration" not in ai_js
+    assert "We could not prepare speaking practice right now." in ai_js
+    assert "We could not create your feedback right now." in ai_js
+
+
+def test_accessibility_landmarks_labels_and_keyboard_skip_links():
+    landing = (ROOT / "templates" / "landing.html").read_text()
+    app = (ROOT / "templates" / "index.html").read_text()
+    css = (ROOT / "public" / "static" / "css" / "styles.css").read_text()
+    landing_js = (ROOT / "public" / "static" / "js" / "landing.js").read_text()
+    for markup in (landing, app):
+        assert 'class="skip-link" href="#main-content"' in markup
+        assert 'id="main-content"' in markup
+    for identifier in ("job-description", "presentation-context", "everyday-context", "hot-category", "custom-topic", "live-transcript"):
+        assert f'for="{identifier}"' in app
+    assert 'aria-live="polite"' in app
+    assert 'role="progressbar"' not in app  # Metrics are populated dynamically with labels and values.
+    assert 'role="progressbar" aria-label="${label}"' in (ROOT / "public" / "static" / "js" / "app.js").read_text()
+    assert 'ArrowRight' in landing_js and 'ArrowLeft' in landing_js
+    assert ':focus-visible' in css and '.skip-link:focus' in css
+
+
+def test_wcag_aa_core_palette_contrast_and_control_boundaries():
+    css = (ROOT / "public" / "static" / "css" / "styles.css").read_text()
+    assert "--muted-2: #5f6b63" in css
+    assert "--field-border: #747f76" in css
+    assert "--field-border: #819187" in css
+    assert ".skip-link" in css
+    assert "min-height: 46px" in css
+    assert "min-height: 36px" in css
+
+
+def test_all_landing_process_steps_are_removed():
+    landing = (ROOT / "templates" / "landing.html").read_text()
+    css = (ROOT / "public" / "static" / "css" / "styles.css").read_text()
+    assert "landing-loop" not in landing
+    assert "Choose a prompt" not in landing
+    assert "Speak under the timer" not in landing
+    assert "Fix one thing and retry" not in landing
+    assert ".landing-loop" not in css
+
+
+def _contrast_ratio(hex_a, hex_b):
+    def luminance(value):
+        value = value.lstrip("#")
+        rgb = [int(value[index:index + 2], 16) / 255 for index in (0, 2, 4)]
+        linear = [channel / 12.92 if channel <= 0.04045 else ((channel + 0.055) / 1.055) ** 2.4 for channel in rgb]
+        return 0.2126 * linear[0] + 0.7152 * linear[1] + 0.0722 * linear[2]
+
+    first, second = sorted((luminance(hex_a), luminance(hex_b)), reverse=True)
+    return (first + 0.05) / (second + 0.05)
+
+
+def test_text_and_ui_boundaries_meet_wcag_aa_core_contrast_thresholds():
+    css = (ROOT / "public" / "static" / "css" / "styles.css").read_text()
+    light = {
+        "ink": "#202823", "muted": "#5f6b63", "muted_2": "#5f6b63",
+        "paper": "#f7f6f1", "surface": "#fbfaf6", "surface_2": "#eeede6",
+        "field": "#fbfaf6", "field_border": "#747f76", "focus": "#245b43",
+    }
+    dark = {
+        "ink": "#edf0eb", "muted": "#b4bcb5", "muted_2": "#929b93",
+        "paper": "#171d19", "surface": "#1e2721", "surface_2": "#27312a",
+        "field": "#1b241e", "field_border": "#819187", "focus": "#a4d0ad",
+    }
+    for palette in (light, dark):
+        for foreground, background in (("ink", "paper"), ("ink", "surface"), ("muted", "paper"),
+                                       ("muted", "surface"), ("muted", "surface_2"),
+                                       ("muted_2", "paper"), ("muted_2", "surface_2"),
+                                       ("muted_2", "field")):
+            assert _contrast_ratio(palette[foreground], palette[background]) >= 4.5, (foreground, background, palette)
+        assert _contrast_ratio(palette["field_border"], palette["field"]) >= 3
+        assert _contrast_ratio(palette["focus"], palette["paper"]) >= 3
+    assert "--muted: #5f6b63" in css

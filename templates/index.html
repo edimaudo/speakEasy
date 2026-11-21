@@ -26,6 +26,7 @@
   <script type="module" src="/static/js/app.js"></script>
 </head>
 <body class="application-body">
+  <a class="skip-link" href="#main-content">Skip to main content</a>
   <div class="app-shell">
     <header class="topbar">
       <a class="brand" href="/" aria-label="SpeakEasy home">SpeakEasy</a>
@@ -34,12 +35,12 @@
         <button class="nav-link" data-view="history">History</button>
       </nav>
       <div class="topbar-right">
-        <span id="ai-status" class="status-pill" hidden><span class="status-dot"></span><span></span></span>
+        <span id="ai-status" class="status-pill" role="status" aria-live="polite" hidden><span class="status-dot"></span><span></span></span>
         <button id="settings-toggle" class="settings-button" aria-label="Open settings and privacy" title="Settings">Settings</button>
       </div>
     </header>
 
-    <main class="application-main">
+    <main id="main-content" class="application-main" tabindex="-1">
       <section id="view-practice" class="view active" aria-label="SpeakEasy practice">
         <header class="app-intro">
           <div>
@@ -76,7 +77,20 @@
 
               <div id="job-description-wrap" class="field-wrap">
                 <label for="job-description">Job description <span class="optional-label">Optional</span></label>
-                <textarea id="job-description" rows="4" maxlength="9000" placeholder="Paste a job description to tailor your interview questions."></textarea>
+                <textarea id="job-description" rows="4" maxlength="9000" aria-describedby="job-description-help" placeholder="Paste a job description to tailor your interview questions."></textarea>
+                <p id="job-description-help" class="field-help">The questions will reflect the role and its requirements.</p>
+              </div>
+
+              <div id="presentation-context-wrap" class="field-wrap" hidden>
+                <label for="presentation-context">Presentation topic and context <span class="optional-label">Optional</span></label>
+                <textarea id="presentation-context" rows="4" maxlength="2500" aria-describedby="presentation-context-help" placeholder="What is the presentation about? Who is the audience, and what should they take away?"></textarea>
+                <p id="presentation-context-help" class="field-help">Add your topic, audience or key message to tailor the questions.</p>
+              </div>
+
+              <div id="everyday-context-wrap" class="field-wrap" hidden>
+                <label for="everyday-context">Speaking situation <span class="optional-label">Optional</span></label>
+                <textarea id="everyday-context" rows="4" maxlength="2500" aria-describedby="everyday-context-help" placeholder="What would you like to practise explaining, asking or discussing?"></textarea>
+                <p id="everyday-context-help" class="field-help">Describe a conversation or situation you want to feel more confident handling.</p>
               </div>
 
               <button id="generate-questions" class="button button-primary">Generate questions <span aria-hidden="true">→</span></button>
@@ -84,9 +98,9 @@
 
             <div class="questions-column">
               <div class="question-toolbar">
-                <div><h3>Your questions</h3><p id="question-set-help">14 questions · First 3 available to start.</p></div>
+                <div><h3>Your questions</h3><p id="question-set-help">Choose a question to practise.</p></div>
               </div>
-              <div id="question-list" class="question-list" aria-live="polite">
+              <div id="question-list" class="question-list" aria-live="polite" aria-relevant="additions text">
                 <div class="empty-state"><p>Your question set will appear here.</p></div>
               </div>
             </div>
@@ -126,7 +140,7 @@
             <div class="prompt-column">
               <div class="prompt-column-heading"><h3>Your prompt</h3></div>
               <div class="prompt-guidance" id="hot-take-empty"><p>Choose a topic and intensity. Your prompt will appear here.</p></div>
-              <div id="hot-take-result" class="hot-take-result" hidden>
+              <div id="hot-take-result" class="hot-take-result" aria-live="polite" hidden>
                 <div class="prompt-meta"><span id="hot-meta-category"></span><span id="hot-meta-heat"></span></div>
                 <p id="hot-take-statement" class="hot-take-statement"></p>
                 <p id="hot-take-constraint" class="constraint-text" hidden></p>
@@ -140,7 +154,7 @@
 
       <section id="view-history" class="view history-view" aria-labelledby="history-heading" hidden>
         <div class="history-heading"><div><h1 id="history-heading">History</h1><p>Your practice sessions from the last 30 days.</p></div></div>
-        <div id="history-list" class="history-list"><div class="empty-state">Your completed sessions will appear here.</div></div>
+        <div id="history-list" class="history-list" aria-live="polite" aria-relevant="additions text"><div class="empty-state">Your completed sessions will appear here.</div></div>
       </section>
 
       <section id="session-panel" class="session-panel" hidden aria-labelledby="session-prompt">

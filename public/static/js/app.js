@@ -1,7 +1,6 @@
 import { isAIReady, generateQuestionSet, generateHotTake, coachTranscript } from "./firebase-ai.js";
 import { setupAppearanceSettings } from "./preferences.js";
 import {
-  getDailyUsage,
   reserveDailyUsage,
   releaseDailyReservation,
   consumeDailyReservation,
@@ -104,17 +103,6 @@ async function api(path, options = {}) {
   return payload;
 }
 
-async function refreshUsage() {
-  try {
-    const limit = Number(window.SPEAKEASY_CONFIG?.dailyLimit || 5);
-    const usage = await getDailyUsage(limit);
-    $("#question-set-help").textContent = `14 questions · ${Math.max(0, usage.limit - usage.used)} of ${usage.limit} free sessions left today on this browser.`;
-  } catch (error) {
-    console.warn("Local usage could not be loaded.", error);
-    $("#question-set-help").textContent = "14 questions · Session allowance is stored in this browser.";
-  }
-}
-
 async function switchView(view) {
   if (state.busy) return;
   await closeSessionPanel();
@@ -181,7 +169,12 @@ async function onGenerateQuestions() {
   state.busy = true;
   setBusy(button, true, "Generating questions…");
   try {
-    const result = await generateQuestionSet(state.goal, $("#job-description").value);
+    const context = state.goal === "Interview"
+      ? $("#job-description").value
+      : state.goal === "Presentation"
+        ? $("#presentation-context").value
+        : $("#everyday-context").value;
+    const result = await generateQuestionSet(state.goal, context);
     state.questions = result.questions;
     state.unlocked = 3;
     state.completed = new Set();
@@ -192,7 +185,6 @@ async function onGenerateQuestions() {
   } finally {
     state.busy = false;
     setBusy(button, false);
-    refreshUsage();
   }
 }
 
@@ -308,15 +300,13 @@ async function reserveUsage() {
   const limit = Number(window.SPEAKEASY_CONFIG?.dailyLimit || 5);
   const reservation = await reserveDailyUsage(limit, state.session.mode);
   state.reservationId = reservation.reservationId;
-  await refreshUsage();
 }
 
 async function releaseReservation() {
   if (!state.reservationId) return;
   try {
     await releaseDailyReservation(state.reservationId);
-    await refreshUsage();
-  } catch (error) {
+    } catch (error) {
     console.warn("Unable to release the unused local session allowance.", error);
   }
   state.reservationId = null;
@@ -632,8 +622,7 @@ async function analyseResponse() {
       state.unlocked = Math.min(14, Math.max(3, 3 + state.completed.size));
       renderQuestions();
     }
-    await refreshUsage();
-    toast("Your coaching report is ready.", "success");
+      toast("Your coaching report is ready.", "success");
   } catch (error) {
     if (state.attempt === 1 && !sessionSaved) await releaseReservation();
     toast(error.message, "error");
@@ -675,7 +664,7 @@ function renderScorecard(session, attemptNumber) {
     ["Hook", result.metrics.hook],
     ["Filler control", result.metrics.fillerControl]
   ];
-  $("#score-metrics").innerHTML = metrics.map(([label, score]) => `<div class="metric-row"><div class="metric-head"><span>${label}</span><strong>${score}</strong></div><div class="metric-track"><i style="width:${Math.max(0, Math.min(100, Number(score)))}%"></i></div></div>`).join("");
+  $("#score-metrics").innerHTML = metrics.map(([label, score]) => `<div class="metric-row"><div class="metric-head"><span>${label}</span><strong>${score}</strong></div><div class="metric-track" role="progressbar" aria-label="${label}" aria-valuemin="0" aria-valuemax="100" aria-valuenow="${Math.max(0, Math.min(100, Number(score)))}"><i style="width:${Math.max(0, Math.min(100, Number(score)))}%"></i></div></div>`).join("");
   $("#line-to-fix").textContent = `“${result.lineToFixQuote}”`;
   $("#line-diagnosis").textContent = result.lineToFixDiagnosis;
   $("#opening-rewrite").textContent = result.openingRewrite;
@@ -729,7 +718,7 @@ async function loadHistory() {
     list.innerHTML = sessions.map((session) => {
       const latest = session.latest;
       const title = session.mode === "hot-take" ? `${session.category} · ${session.heat}` : session.goal;
-      return `<article class="history-item"><div class="history-main"><div><span class="history-type">${session.mode === "hot-take" ? "HOT TAKE" : "STRUCTURED PRACTICE"}</span><h3>${escapeHtml(title)}</h3><p>${escapeHtml(session.prompt)}</p><span class="history-date">${new Date(session.createdAt).toLocaleString()}</span></div><div class="history-score"><strong>${Number(latest?.overallScore ?? 0).toFixed(1).replace(/\.0$/, "")}</strong><span>/100</span><small>${session.attempts.length} ${session.attempts.length === 1 ? "attempt" : "attempts"}</small></div></div><div class="history-actions"><button class="text-button" data-history-open="${session.id}">View feedback</button><button class="text-button destructive" data-history-delete="${session.id}">Delete</button></div></article>`;
+      return `<article class="history-item"><div class="history-main"><div><span class="history-type">${session.mode === "hot-take" ? "HOT TAKE" : "STRUCTURED PRACTICE"}</span><h3>${escapeHtml(title)}</h3><p>${escapeHtml(session.prompt)}</p><span class="history-date">${new Date(session.createdAt).toLocaleString()}</span></div><div class="history-score"><strong>${Number(latest?.overallScore ?? 0).toFixed(1).replace(/\.0$/, "")}</strong><span>/100</span><small>${session.attempts.length} ${session.attempts.length === 1 ? "attempt" : "attempts"}</small></div></div><div class="history-actions"><button class="text-button" data-history-open="${session.id}" aria-label="View feedback for ${escapeHtml(title)}">View feedback</button><button class="text-button destructive" data-history-delete="${session.id}" aria-label="Delete ${escapeHtml(title)} session">Delete</button></div></article>`;
     }).join("");
   } catch (error) {
     list.innerHTML = `<div class="empty-state">${escapeHtml(friendlyMessage(error.message))}</div>`;
@@ -770,6 +759,12 @@ async function deleteHistorySession(sessionId) {
   }
 }
 
+function updateGoalInputs(goal) {
+  $("#job-description-wrap").hidden = goal !== "Interview";
+  $("#presentation-context-wrap").hidden = goal !== "Presentation";
+  $("#everyday-context-wrap").hidden = goal !== "Everyday speaking";
+}
+
 function setupEvents() {
   $$(".nav-link").forEach((button) => button.addEventListener("click", () => switchView(button.dataset.view)));
   $$('[data-practice-mode]').forEach((tab) => {
@@ -794,7 +789,7 @@ function setupEvents() {
       card.classList.toggle("selected", selected);
       card.setAttribute("aria-pressed", String(selected));
     });
-    $("#job-description-wrap").hidden = state.goal !== "Interview";
+    updateGoalInputs(state.goal);
   }));
   $("#generate-questions").addEventListener("click", onGenerateQuestions);
   $("#question-list").addEventListener("click", (event) => {
@@ -858,10 +853,9 @@ function setupEvents() {
 function init() {
   setupEvents();
   setPracticeMode("structured");
-  $("#job-description-wrap").hidden = false;
+  updateGoalInputs(state.goal);
   $("#analyse-response").hidden = true;
-  if (isAIReady()) setAIStatus("Firebase AI Logic ready", "ready");
-  refreshUsage();
+  if (isAIReady()) setAIStatus("Speaking tools ready", "ready");
   // Listing prunes expired records during startup, so old history is removed
   // after the 30-day retention window without requiring a manual History visit.
   listSessions(1).catch((error) => console.warn("Local history cleanup could not run.", error));

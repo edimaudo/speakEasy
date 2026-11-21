@@ -1,39 +1,38 @@
-# SpeakEasy — current design and regression validation
+# SpeakEasy — UX, accessibility and responsive validation
 
-## What changed in this revision
+## Changes in this revision
 
-- Replaced the previous marketing-style landing page with a concise page using only the product information in the PRD: 60-second structured practice, 90-second spontaneous takes, specific feedback, and the three-step practice loop.
-- Removed the extra feature rows, repeated calls to action, social-proof/pricing-style sections, and footer. The page now has one headline, one concise explanation, one product demonstration, one primary CTA, and one three-step loop.
-- Rebuilt the application screen as a speaking-practice tool rather than a generic AI/chat interface.
-- Structured practice and Hot Take now use an open two-column working layout: setup on the left, generated questions or prompt on the right.
-- Replaced purple accents, gradients, rounded panel cards, and stacked card treatments with a restrained rust accent, typography, working space, and dividers.
-- Preserved the same product identity, practice/history navigation, settings, history, timed recording, scorecard, and both practice formats.
-- Updated the 404 and 500 pages to use the same Inter wordmark and plain language as the application.
-
-## Design and interaction checks
-
-- The landing page contains exactly two content sections: the hero/product preview and the three-step practice loop.
-- The landing page has one primary CTA and does not introduce content beyond the PRD.
-- The product preview switches between structured and spontaneous practice prompts and updates the displayed duration.
-- The application uses one Practice destination with one accessible tablist for the two formats.
-- Structured and Hot Take panels keep their existing IDs and API wiring; the mode selector updates `aria-selected`, keyboard tab stop, and panel visibility.
-- Generated Hot Take prompts replace the empty prompt state instead of appearing alongside it.
-- Practice setup and prompt/question output use an open, line-based layout rather than generic AI cards or chat bubbles.
-- The primary accent is rust rather than purple; no CSS gradients or pill-shaped practice panels are used.
-- Existing theme and font-size settings are preserved. Settings text does not expose Firebase, IndexedDB, Gemini, or Gemini Nano implementation details.
-- Focus outlines remain on interactive controls, not on content sections or tab panels.
+- Removed the landing-page numbered process section.
+- Removed daily browser session allowance copy from the question toolbar; the question area now says only “Choose a question to practise.”
+- Added labelled context textareas for Presentation and Everyday Speaking. Interview retains its optional job-description textarea.
+- Replaced technical AI setup errors with short, user-facing messages.
+- Added skip links, accessible labels, live status announcements, keyboard-operated landing tabs, and accessible score metric progress values.
+- Increased muted text contrast in both themes and strengthened field boundaries and focus indicators.
+- Checked responsive reflow and settings controls across desktop, tablet and narrow mobile widths.
 
 ## Automated checks
 
-- `python -m pytest -q`: **41 passed**.
+- `python -m pytest -q`: 48 tests passed.
 - Python compilation: passed.
-- JavaScript ES-module syntax checks: passed for `app.js`, `firebase-ai.js`, `local-store.js`, `preferences.js`, and `landing.js`.
-- CSS parser validation: passed with zero syntax errors.
-- HTML/template tests: route render, static asset paths, required element IDs, and error page templates passed.
-- Existing scoring, usage, local history, IndexedDB recovery, privacy, and AI integration contract tests remain in the suite.
+- Browser JavaScript ES-module syntax checks: passed.
+- CSS parsing: zero syntax errors.
+- All visible form controls have accessible names.
+- Keyboard focus styling is present on interactive elements and absent from content panels.
+- Automated WCAG 2.2 AA core contrast checks: normal text >= 4.5:1; non-text field boundaries and focus indicators >= 3:1.
 
-## Browser verification limitation
+## Browser checks
 
-A live browser screenshot run was attempted, but Chromium navigation to the local application and local HTML files was blocked by the execution environment (`ERR_BLOCKED_BY_ADMINISTRATOR`). The WeasyPrint print rendering is not a substitute for browser layout testing, so no claim is made that real-browser visual or responsive interaction checks passed in this revision.
+Headless Chromium was used with the server-rendered HTML and inlined local assets to avoid blocked local-network navigation in the execution environment. Checks passed at 1440, 1024, 768, 560, 430, 390, 375 and 320 CSS-pixel widths for both landing and app pages, with no horizontal overflow. Small, medium and large text modes were also checked in both light and dark themes.
 
-Before production release, run the landing page and application in Chrome at desktop, tablet, and mobile widths; test both practice tabs; verify Light/Dark and all font-size choices; and test keyboard/screen-reader navigation, microphone capture, Firebase AI Logic, Gemini Nano, and cloud fallback on a supported device.
+Interaction checks passed for landing tabs, the Practice-format tabs (including arrow-key navigation and associated panel visibility), goal-specific context fields and the values sent to the question generator, theme selection, font-size selection, and generic AI error messaging. The Hot Take panel was also checked at all responsive widths across both themes and all three font-size choices. The settings dialog was checked at 320px and larger widths, including vertical scrolling without horizontal overflow. The browser test uses mocked AI and local storage interfaces; it does not claim to verify live Gemini inference or microphone permissions.
+
+## WCAG scope and remaining manual review
+
+The implementation addresses WCAG 2.2 AA requirements for text and non-text contrast, keyboard operability, visible focus, labels and instructions, status messages, skip navigation, semantic landmarks, and reflow. Automated checks are not a formal accessibility certification. All tested controls have accessible names, interactive targets are at least 24×24 CSS pixels, visible keyboard focus uses a 2px outline with offset, and no content-panel outline is introduced. Before launch, complete manual screen-reader testing with NVDA/VoiceOver, full keyboard testing of every recording and scorecard state, and real-device zoom/reflow testing.
+
+## Not verified in this environment
+
+- Live Firebase AI Logic calls, Gemini Nano model readiness and cloud fallback.
+- Real microphone capture and browser speech recognition.
+- Screen-reader announcements across assistive technology/browser combinations.
+- Vercel production deployment.

@@ -40,7 +40,9 @@ def test_root_renders_marketing_landing_page_with_a_single_product_value_proposi
     assert "Practise speaking." in response.text
     assert "Make your point." in response.text
     assert "Start practising" in response.text
-    assert "Fix one thing and retry" in response.text
+    assert "Choose a prompt" not in response.text
+    assert "Speak under the timer" not in response.text
+    assert "Fix one thing and retry" not in response.text
     assert 'href="/app"' in response.text
     assert "Firebase" not in response.text
     assert "Gemini" not in response.text

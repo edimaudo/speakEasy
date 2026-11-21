@@ -25,12 +25,13 @@
   <script type="module" src="/static/js/landing.js"></script>
 </head>
 <body class="landing-body">
+  <a class="skip-link" href="#main-content">Skip to main content</a>
   <div class="landing-shell">
     <header class="landing-header">
       <a class="brand" href="/" aria-label="SpeakEasy home">SpeakEasy</a>
     </header>
 
-    <main class="landing-main">
+    <main id="main-content" class="landing-main" tabindex="-1">
       <section class="landing-hero" aria-labelledby="landing-title">
         <div class="landing-copy">
           <h1 id="landing-title">Practise speaking.<br><span>Make your point.</span></h1>
@@ -40,12 +41,14 @@
 
         <div class="landing-demo" aria-label="Example SpeakEasy practice session">
           <div class="demo-mode-row" role="tablist" aria-label="Practice format">
-            <button type="button" class="demo-mode active" role="tab" aria-selected="true" data-demo-mode="structured">Structured practice</button>
-            <button type="button" class="demo-mode" role="tab" aria-selected="false" data-demo-mode="spontaneous">Hot take</button>
+            <button id="demo-tab-structured" type="button" class="demo-mode active" role="tab" aria-selected="true" aria-controls="demo-preview" tabindex="0" data-demo-mode="structured">Structured practice</button>
+            <button id="demo-tab-spontaneous" type="button" class="demo-mode" role="tab" aria-selected="false" aria-controls="demo-preview" tabindex="-1" data-demo-mode="spontaneous">Hot take</button>
           </div>
-          <div class="demo-prompt" role="tabpanel">
+          <div id="demo-preview" class="demo-preview" role="tabpanel" aria-labelledby="demo-tab-structured" tabindex="0">
+            <div class="demo-prompt">
             <h2 id="demo-prompt-text">Tell me about a time you had to solve a difficult problem.</h2>
             <p id="demo-guidance" class="demo-guidance">Describe the situation, the action you took and the result.</p>
+          </div>
           </div>
           <div class="demo-bottom-row">
             <div class="demo-timer"><strong id="demo-time">01:00</strong><span>to speak</span></div>
@@ -59,13 +62,6 @@
         </div>
       </section>
 
-      <section class="landing-loop" aria-label="How SpeakEasy practice works">
-        <div><span>01</span><strong>Choose a prompt</strong></div>
-        <i aria-hidden="true"></i>
-        <div><span>02</span><strong>Speak under the timer</strong></div>
-        <i aria-hidden="true"></i>
-        <div><span>03</span><strong>Fix one thing and retry</strong></div>
-      </section>
     </main>
   </div>
 </body>
